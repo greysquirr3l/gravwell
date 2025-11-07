@@ -322,11 +322,7 @@
     "MD029": false,  // Ordered list item prefix - allow different numbering styles
     "MD010": false,  // Hard tabs - allow tabs in code blocks (Makefiles)
     "MD032": false,  // Blanks around lists - more flexible list formatting
-    "MD036": {       // No emphasis as heading - allow emphasis for styling
-      "punctuation": ".,;:!?()[]",
-      "emphasis_style": "*",
-      "strong_style": "**"
-    }
+    "MD036": false   // No emphasis as heading - disabled for technical docs
   },
   
   // File-specific markdown lint ignores

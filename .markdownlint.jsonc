@@ -12,12 +12,8 @@
     "headings": false
   },
   
-  // Emphasis as heading - allow emphasis for design/branding content
-  "MD036": {
-    "punctuation": ".,;:!?()[]",
-    "emphasis_style": "*",
-    "strong_style": "**"
-  },
+  // Emphasis as heading - disabled for technical documentation
+  "MD036": false,
   
   // Allow different list numbering styles for technical docs
   "MD029": false,
@@ -30,13 +26,11 @@
   
   // Allow duplicate headings in different sections
   "MD024": {
-    "allow_different_nesting": true
+    "siblings_only": true
   },
   
-  // Fenced code blocks should specify language (but allow exceptions)
-  "MD040": {
-    "allowed_languages": ["text", "plaintext", "ascii", ""]
-  },
+  // Fenced code blocks - disabled language requirement for flexibility
+  "MD040": false,
   
   // Allow raw HTML for advanced formatting
   "MD033": {
