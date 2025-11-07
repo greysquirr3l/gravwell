@@ -249,6 +249,17 @@ physics_cache/
 validation_results/
 benchmark_history/
 
+# Ignore specific all-caps documentation files (development/internal docs)
+docs/AUTONOMOUS_DEVELOPMENT_REPORT.md
+docs/GRAVWELL_BRANDING.md
+docs/INITIAL_PROMPT.md
+docs/MEMORY_POOL_COMPLETION_REPORT.md
+docs/MILESTONE_REPORT_PRIORITY_2.md
+docs/PROJECT_STATUS_REPORT.md
+docs/README_TEMPLATE.md
+docs/RUST_LIBRARY_BEST_PRACTICES.md
+docs/SIMD_IMPLEMENTATION_REPORT.md
+
 # Development files
 TODO.md
 
