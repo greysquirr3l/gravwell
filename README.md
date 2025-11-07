@@ -287,4 +287,4 @@ at your option.
 
 ---
 
-**Built with ❤️ and ⚛️ physics in Rust**
+*Built with ❤️ and ⚛️ physics in Rust*

@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/crates/l/gravwell.svg)](LICENSE-MIT)
 [![CI](https://github.com/username/gravwell/workflows/CI/badge.svg)](https://github.com/username/gravwell/actions)
 
-**Realistic gravity wells for games and astrophysics**
+*Realistic gravity wells for games and astrophysics*
 
 Ultra-realistic gravity simulation library for Rust, supporting both real-time game physics and high-accuracy scientific computing.
 

@@ -2,7 +2,10 @@
 
 ## Executive Summary
 
-This document outlines **comprehensive Rust library design principles** for building a production-grade, reusable gravity simulation crate. Following these practices ensures the library is ergonomic, maintainable, performant, and idiomatic for downstream consumers.
+This document outlines **comprehensive Rust library design principles** for building
+a production-grade, reusable gravity simulation crate. Following these practices
+ensures the library is ergonomic, maintainable, performant, and idiomatic for
+downstream consumers.
 
 **Core Principles**:
 
@@ -19,7 +22,7 @@ This document outlines **comprehensive Rust library design principles** for buil
 
 ### 1.1 Workspace Layout
 
-```
+```plaintext
 gravity_sim/
 ├── Cargo.toml              # Workspace root
 ├── README.md
@@ -1378,4 +1381,5 @@ jobs:
 - ✅ Use appropriate crate metadata
 - ✅ Choose permissive license (MIT/Apache-2.0)
 
-This document provides a comprehensive foundation for building a production-quality Rust library that follows ecosystem best practices!
+This document provides a comprehensive foundation for building a production-quality
+Rust library that follows ecosystem best practices!

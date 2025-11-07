@@ -7,17 +7,23 @@
 
 ## Project Vision
 
-**Gravwell** is a production-grade Rust crate for ultra-realistic gravity simulation that serves **both game development and scientific computing** communities through a dual-mode architecture. This library follows **Rust ecosystem best practices** for reusable, idiomatic, and maintainable library design.
+**Gravwell** is a production-grade Rust crate for ultra-realistic gravity simulation
+that serves **both game development and scientific computing** communities through
+a dual-mode architecture. This library follows **Rust ecosystem best practices**
+for reusable, idiomatic, and maintainable library design.
 
 **Tagline**: *Realistic gravity wells for games and astrophysics*
 
-**Core Philosophy:** Rather than compromise between game performance and scientific accuracy, implement distinct but composable modes that excel in their respective domains while sharing common abstractions.
+**Core Philosophy:** Rather than compromise between game performance and scientific
+accuracy, implement distinct but composable modes that excel in their respective
+domains while sharing common abstractions.
 
 ## Project Goals
 
 ### Primary Goals
 
-1. **Multi-Scale Support**: Seamlessly handle planetary/solar system scale, local surface gravity, and intermediate scales
+1. **Multi-Scale Support**: Seamlessly handle planetary/solar system scale, local
+    surface gravity, and intermediate scales
 2. **Dual Performance Modes**:
    - **Game Mode**: Real-time performance (1000+ bodies at 30+ FPS) with bounded, stable behavior
    - **Science Mode**: High accuracy (energy conservation < 10⁻¹⁰) with symplectic integration
@@ -106,7 +112,7 @@
 
 ### Module Structure
 
-```
+```plaintext
 gravwell/                  # Workspace root
 ├── Cargo.toml             # Workspace manifest
 ├── README.md
@@ -851,11 +857,14 @@ pub fn add_body(&mut self, body: Body) -> Result<BodyHandle> {
 
 > 📘 **For comprehensive implementation details, see [60FPS_REQUIREMENTS.md](./60FPS_REQUIREMENTS.md)**
 
-Achieving 60 FPS (16.67ms frame budget) versus 30 FPS (33.33ms) requires **fundamentally different optimization strategies**. The following approaches are listed in priority order for implementation:
+Achieving 60 FPS (16.67ms frame budget) versus 30 FPS (33.33ms) requires
+**fundamentally different optimization strategies**. The following approaches are
+listed in priority order for implementation:
 
 ### Critical Optimization #1: Physics/Render Rate Decoupling
 
-**The most impactful optimization** - update physics at 20-30 Hz while rendering at 60 Hz with interpolation:
+**The most impactful optimization** - update physics at 20-30 Hz while rendering
+at 60 Hz with interpolation:
 
 ```rust
 pub struct DecoupledSimulation {
@@ -2008,11 +2017,16 @@ cargo build --no-default-features # no_std works
 
 ## Final Notes
 
-This INITIAL_PROMPT.md represents a comprehensive blueprint for building a production-quality gravity simulation crate that serves both game developers and scientific researchers. The key insights are:
+This INITIAL_PROMPT.md represents a comprehensive blueprint for building a
+production-quality gravity simulation crate that serves both game developers and
+scientific researchers. The key insights are:
 
-1. **Dual-Mode Architecture**: Game and science modes have fundamentally different needs—serve both excellently rather than compromising
-2. **Library-First Design**: Follow Rust ecosystem conventions from day one for maximum adoption and maintainability
-3. **Zero-Cost Abstractions**: Leverage Rust's type system to provide ergonomic APIs without runtime overhead
+1. **Dual-Mode Architecture**: Game and science modes have fundamentally different
+    needs—serve both excellently rather than compromising
+2. **Library-First Design**: Follow Rust ecosystem conventions from day one for
+    maximum adoption and maintainability
+3. **Zero-Cost Abstractions**: Leverage Rust's type system to provide ergonomic
+    APIs without runtime overhead
 
 **Critical Success Factors:**
 
@@ -2022,7 +2036,11 @@ This INITIAL_PROMPT.md represents a comprehensive blueprint for building a produ
 - **Document Everything**: Every public item with examples, errors, and panics documented
 - **Optimize Later**: Get correctness and API ergonomics right before performance
 
-**Start with Phase 1, validate thoroughly, then proceed.** Resist the temptation to optimize prematurely or add features before the foundation is solid. The Rust ecosystem provides unique advantages—zero-cost abstractions, memory safety, excellent tooling—that make this project feasible where similar efforts in other languages might struggle.
+**Start with Phase 1, validate thoroughly, then proceed.** Resist the temptation
+to optimize prematurely or add features before the foundation is solid. The Rust
+ecosystem provides unique advantages—zero-cost abstractions, memory safety,
+excellent tooling—that make this project feasible where similar efforts in other
+languages might struggle.
 
 ### Library Design Philosophy
 
@@ -2034,7 +2052,8 @@ Building a **reusable library** requires different thinking than an application:
 - **Zero Surprises**: Follow Rust conventions, use Result for fallible ops, document panics
 - **Extensibility**: Traits for customization, handles instead of borrows
 
-The [RUST_LIBRARY_BEST_PRACTICES.md](./RUST_LIBRARY_BEST_PRACTICES.md) document provides detailed patterns for:
+The [RUST_LIBRARY_BEST_PRACTICES.md](./RUST_LIBRARY_BEST_PRACTICES.md) document
+provides detailed patterns for:
 
 - Workspace structure and organization
 - Feature flag management
@@ -2046,7 +2065,10 @@ The [RUST_LIBRARY_BEST_PRACTICES.md](./RUST_LIBRARY_BEST_PRACTICES.md) document 
 
 ### About 60 FPS Performance
 
-The **60 FPS stretch goals** represent aspirational targets that demonstrate the crate's capabilities under optimal conditions. Achieving 60 FPS requires careful attention to performance from the start, but should not compromise the core goal of building a solid, correct, well-architected foundation.
+The **60 FPS stretch goals** represent aspirational targets that demonstrate the
+crate's capabilities under optimal conditions. Achieving 60 FPS requires careful
+attention to performance from the start, but should not compromise the core goal
+of building a solid, correct, well-architected foundation.
 
 **Recommended approach**:
 
@@ -2054,7 +2076,9 @@ The **60 FPS stretch goals** represent aspirational targets that demonstrate the
 2. **Phase 2**: Add SIMD and LOD systems as stretch goals once core physics is solid
 3. **Phase 3**: Polish 60 FPS performance for showcase demos and demanding applications
 
-The [60FPS_REQUIREMENTS.md](./60FPS_REQUIREMENTS.md) document provides complete implementation details, but these optimizations should be considered enhancements rather than requirements for a successful MVP.
+The [60FPS_REQUIREMENTS.md](./60FPS_REQUIREMENTS.md) document provides complete
+implementation details, but these optimizations should be considered enhancements
+rather than requirements for a successful MVP.
 
 Remember: *"Make it work, make it right, make it fast"* —in that order.
 

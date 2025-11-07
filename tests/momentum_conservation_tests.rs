@@ -334,157 +334,218 @@ mod momentum_tests {
         println!("\n⚖️ Testing momentum conservation with Velocity Verlet...");
         test_integrator_momentum_conservation_vv();
     }
-    
-    #[test] 
+
+    #[test]
     fn test_momentum_conservation_leapfrog() {
         println!("\n⚖️ Testing momentum conservation with Leapfrog...");
         test_integrator_momentum_conservation_lf();
     }
-    
+
     #[test]
     fn test_momentum_conservation_rk4() {
         println!("\n⚖️ Testing momentum conservation with RK4...");
         test_integrator_momentum_conservation_rk4();
     }
-    
-    fn create_velocity_verlet_sim() -> gravwell::builder::Simulation<VelocityVerlet, DirectGravity> {
+
+    fn create_velocity_verlet_sim() -> gravwell::builder::Simulation<VelocityVerlet, DirectGravity>
+    {
         SimulationBuilder::new()
             .with_integrator(VelocityVerlet::new())
             .with_force_calculator(DirectGravity::new())
-            .add_body(Body::new()
-                .with_mass(SOLAR_MASS)
-                .with_position([0.0, 0.0, 0.0])
-                .with_velocity([0.0, 0.0, 0.0]))
+            .add_body(
+                Body::new()
+                    .with_mass(SOLAR_MASS)
+                    .with_position([0.0, 0.0, 0.0])
+                    .with_velocity([0.0, 0.0, 0.0]),
+            )
             .expect("Failed to add Sun")
-            .add_body(Body::new()
-                .with_mass(EARTH_MASS)
-                .with_position([AU, 0.0, 0.0])
-                .with_velocity([0.0, 29785.0, 0.0]))
+            .add_body(
+                Body::new()
+                    .with_mass(EARTH_MASS)
+                    .with_position([AU, 0.0, 0.0])
+                    .with_velocity([0.0, 29785.0, 0.0]),
+            )
             .expect("Failed to add Earth")
             .build()
             .expect("Failed to build simulation")
     }
-    
+
     fn create_leapfrog_sim() -> gravwell::builder::Simulation<Leapfrog, DirectGravity> {
         SimulationBuilder::new()
             .with_integrator(Leapfrog::new())
             .with_force_calculator(DirectGravity::new())
-            .add_body(Body::new()
-                .with_mass(SOLAR_MASS)
-                .with_position([0.0, 0.0, 0.0])
-                .with_velocity([0.0, 0.0, 0.0]))
+            .add_body(
+                Body::new()
+                    .with_mass(SOLAR_MASS)
+                    .with_position([0.0, 0.0, 0.0])
+                    .with_velocity([0.0, 0.0, 0.0]),
+            )
             .expect("Failed to add Sun")
-            .add_body(Body::new()
-                .with_mass(EARTH_MASS)
-                .with_position([AU, 0.0, 0.0])
-                .with_velocity([0.0, 29785.0, 0.0]))
+            .add_body(
+                Body::new()
+                    .with_mass(EARTH_MASS)
+                    .with_position([AU, 0.0, 0.0])
+                    .with_velocity([0.0, 29785.0, 0.0]),
+            )
             .expect("Failed to add Earth")
             .build()
             .expect("Failed to build simulation")
     }
-    
+
     fn create_rk4_sim() -> gravwell::builder::Simulation<RungeKutta4, DirectGravity> {
         SimulationBuilder::new()
             .with_integrator(RungeKutta4::new())
             .with_force_calculator(DirectGravity::new())
-            .add_body(Body::new()
-                .with_mass(SOLAR_MASS)
-                .with_position([0.0, 0.0, 0.0])
-                .with_velocity([0.0, 0.0, 0.0]))
+            .add_body(
+                Body::new()
+                    .with_mass(SOLAR_MASS)
+                    .with_position([0.0, 0.0, 0.0])
+                    .with_velocity([0.0, 0.0, 0.0]),
+            )
             .expect("Failed to add Sun")
-            .add_body(Body::new()
-                .with_mass(EARTH_MASS)
-                .with_position([AU, 0.0, 0.0])
-                .with_velocity([0.0, 29785.0, 0.0]))
+            .add_body(
+                Body::new()
+                    .with_mass(EARTH_MASS)
+                    .with_position([AU, 0.0, 0.0])
+                    .with_velocity([0.0, 29785.0, 0.0]),
+            )
             .expect("Failed to add Earth")
             .build()
             .expect("Failed to build simulation")
     }
-    
+
     fn test_integrator_momentum_conservation_vv() {
         let mut sim = create_velocity_verlet_sim();
         let initial_linear = calculate_linear_momentum(&sim);
         let initial_angular = calculate_angular_momentum(&sim);
-        
+
         // Simulate for 3 years
         let timestep = 3600.0; // 1 hour
         let total_steps = 3 * 365 * 24;
         let simulation_time = total_steps as f64 * timestep;
-        
+
         for _step in 0..total_steps {
             sim.step(timestep).expect("Simulation step failed");
         }
-        
-        let analysis = analyze_momentum_conservation(&sim, initial_linear, initial_angular, simulation_time, total_steps);
-        
-        println!("  Linear momentum error: {:.2e}", analysis.linear_momentum_error);
-        println!("  Angular momentum error: {:.2e}", analysis.angular_momentum_error);
-        
-        assert!(analysis.linear_momentum_error < 1e-12,
-            "Linear momentum error too large: {:.2e} > 1e-12", 
-            analysis.linear_momentum_error);
-        assert!(analysis.angular_momentum_error < 1e-12,
+
+        let analysis = analyze_momentum_conservation(
+            &sim,
+            initial_linear,
+            initial_angular,
+            simulation_time,
+            total_steps,
+        );
+
+        println!(
+            "  Linear momentum error: {:.2e}",
+            analysis.linear_momentum_error
+        );
+        println!(
+            "  Angular momentum error: {:.2e}",
+            analysis.angular_momentum_error
+        );
+
+        assert!(
+            analysis.linear_momentum_error < 1e-12,
+            "Linear momentum error too large: {:.2e} > 1e-12",
+            analysis.linear_momentum_error
+        );
+        assert!(
+            analysis.angular_momentum_error < 1e-12,
             "Angular momentum error too large: {:.2e} > 1e-12",
-            analysis.angular_momentum_error);
-        
+            analysis.angular_momentum_error
+        );
+
         println!("✅ Velocity Verlet momentum conservation validated!");
     }
-    
+
     fn test_integrator_momentum_conservation_lf() {
         let mut sim = create_leapfrog_sim();
         let initial_linear = calculate_linear_momentum(&sim);
         let initial_angular = calculate_angular_momentum(&sim);
-        
+
         // Simulate for 3 years
         let timestep = 3600.0; // 1 hour
         let total_steps = 3 * 365 * 24;
         let simulation_time = total_steps as f64 * timestep;
-        
+
         for _step in 0..total_steps {
             sim.step(timestep).expect("Simulation step failed");
         }
-        
-        let analysis = analyze_momentum_conservation(&sim, initial_linear, initial_angular, simulation_time, total_steps);
-        
-        println!("  Linear momentum error: {:.2e}", analysis.linear_momentum_error);
-        println!("  Angular momentum error: {:.2e}", analysis.angular_momentum_error);
-        
-        assert!(analysis.linear_momentum_error < 1e-12,
-            "Linear momentum error too large: {:.2e} > 1e-12", 
-            analysis.linear_momentum_error);
-        assert!(analysis.angular_momentum_error < 1e-12,
+
+        let analysis = analyze_momentum_conservation(
+            &sim,
+            initial_linear,
+            initial_angular,
+            simulation_time,
+            total_steps,
+        );
+
+        println!(
+            "  Linear momentum error: {:.2e}",
+            analysis.linear_momentum_error
+        );
+        println!(
+            "  Angular momentum error: {:.2e}",
+            analysis.angular_momentum_error
+        );
+
+        assert!(
+            analysis.linear_momentum_error < 1e-12,
+            "Linear momentum error too large: {:.2e} > 1e-12",
+            analysis.linear_momentum_error
+        );
+        assert!(
+            analysis.angular_momentum_error < 1e-12,
             "Angular momentum error too large: {:.2e} > 1e-12",
-            analysis.angular_momentum_error);
-        
+            analysis.angular_momentum_error
+        );
+
         println!("✅ Leapfrog momentum conservation validated!");
     }
-    
+
     fn test_integrator_momentum_conservation_rk4() {
         let mut sim = create_rk4_sim();
         let initial_linear = calculate_linear_momentum(&sim);
         let initial_angular = calculate_angular_momentum(&sim);
-        
+
         // Simulate for 3 years
         let timestep = 3600.0; // 1 hour
         let total_steps = 3 * 365 * 24;
         let simulation_time = total_steps as f64 * timestep;
-        
+
         for _step in 0..total_steps {
             sim.step(timestep).expect("Simulation step failed");
         }
-        
-        let analysis = analyze_momentum_conservation(&sim, initial_linear, initial_angular, simulation_time, total_steps);
-        
-        println!("  Linear momentum error: {:.2e}", analysis.linear_momentum_error);
-        println!("  Angular momentum error: {:.2e}", analysis.angular_momentum_error);
-        
-        assert!(analysis.linear_momentum_error < 1e-12,
-            "Linear momentum error too large: {:.2e} > 1e-12", 
-            analysis.linear_momentum_error);
-        assert!(analysis.angular_momentum_error < 1e-12,
+
+        let analysis = analyze_momentum_conservation(
+            &sim,
+            initial_linear,
+            initial_angular,
+            simulation_time,
+            total_steps,
+        );
+
+        println!(
+            "  Linear momentum error: {:.2e}",
+            analysis.linear_momentum_error
+        );
+        println!(
+            "  Angular momentum error: {:.2e}",
+            analysis.angular_momentum_error
+        );
+
+        assert!(
+            analysis.linear_momentum_error < 1e-12,
+            "Linear momentum error too large: {:.2e} > 1e-12",
+            analysis.linear_momentum_error
+        );
+        assert!(
+            analysis.angular_momentum_error < 1e-12,
             "Angular momentum error too large: {:.2e} > 1e-12",
-            analysis.angular_momentum_error);
-        
+            analysis.angular_momentum_error
+        );
+
         println!("✅ RK4 momentum conservation validated!");
     }
 

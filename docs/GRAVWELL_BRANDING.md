@@ -19,7 +19,7 @@ A **gravity well** is the fundamental concept in physics describing how mass cur
 
 ### Primary (Recommended)
 
-**"Realistic gravity wells for games and astrophysics"**
+"Realistic gravity wells for games and astrophysics"
 
 - Clear dual-audience messaging
 - Uses the name as a pun/double meaning
@@ -49,9 +49,9 @@ A **gravity well** is the fundamental concept in physics describing how mass cur
 
 ### Logo Concepts
 
-**Concept 1: Gravity Well Wireframe**
+#### Concept 1: Gravity Well Wireframe
 
-```
+```text
     ╱╲
    ╱  ╲
   ╱____╲
@@ -61,9 +61,9 @@ A **gravity well** is the fundamental concept in physics describing how mass cur
 
 A funnel/well shape representing spacetime curvature
 
-**Concept 2: Orbiting Bodies**
+#### Concept 2: Orbiting Bodies
 
-```
+```text
     •
   ◯   •
     •
@@ -71,9 +71,9 @@ A funnel/well shape representing spacetime curvature
 
 Multiple bodies in orbit around a central mass
 
-**Concept 3: Typography-Based**
+#### Concept 3: Typography-Based
 
-```
+```text
  _____ ____  ___  _     _ _    _ ____ _     _     
 |  __ |  _ \|__ \| |   | | |  | |  __| |   | |    
 | |  || |_) | / /| |   | | |  | | |_ | |   | |    

@@ -356,4 +356,6 @@ Set up automated benchmarking in CI/CD:
 
 ---
 
-**This performance guide provides concrete optimization strategies based on comprehensive benchmarking data. Use the benchmarking suite to validate all optimizations and track performance improvements systematically.**
+**This performance guide provides concrete optimization strategies based on
+comprehensive benchmarking data. Use the benchmarking suite to validate all
+optimizations and track performance improvements systematically.**

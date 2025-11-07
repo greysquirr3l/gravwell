@@ -46,9 +46,12 @@
 #![warn(clippy::all, clippy::pedantic)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+pub mod adaptive;
 pub mod core;
 pub mod forces;
 pub mod integrators;
+pub mod lod;
+pub mod memory;
 pub mod simd;
 pub mod utils;
 
