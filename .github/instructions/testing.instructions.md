@@ -1,11 +1,6 @@
 ---
 applyTo: "**/test/**/*test*"
 description: "Gravwell gravity simulation testing patterns and standards for comprehensive physics validation"
-references:
-  - rust_testing_guide: "https://doc.rust-lang.org/book/ch11-00-testing.html"
-  - criterion_docs: "https://docs.rs/criterion/"
-  - proptest_docs: "https://docs.rs/proptest/"
-  - physics_validation: "https://rebound.readthedocs.io/en/latest/"
 ---
 
 # Gravwell Physics Testing Standards and Patterns

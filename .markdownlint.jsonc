@@ -1,0 +1,45 @@
+{
+  // Gravwell Markdown Linting Configuration
+  // Balances strict formatting with practical documentation needs
+  
+  "default": true,
+  
+  // Line length - accommodate technical documentation
+  "MD013": {
+    "line_length": 180,
+    "code_blocks": false,
+    "tables": false,
+    "headings": false
+  },
+  
+  // Emphasis as heading - allow emphasis for design/branding content
+  "MD036": {
+    "punctuation": ".,;:!?()[]",
+    "emphasis_style": "*",
+    "strong_style": "**"
+  },
+  
+  // Allow different list numbering styles for technical docs
+  "MD029": false,
+  
+  // Allow hard tabs in code blocks (Makefiles, etc.)
+  "MD010": false,
+  
+  // More flexible list formatting
+  "MD032": false,
+  
+  // Allow duplicate headings in different sections
+  "MD024": {
+    "allow_different_nesting": true
+  },
+  
+  // Fenced code blocks should specify language (but allow exceptions)
+  "MD040": {
+    "allowed_languages": ["text", "plaintext", "ascii", ""]
+  },
+  
+  // Allow raw HTML for advanced formatting
+  "MD033": {
+    "allowed_elements": ["br", "sub", "sup", "details", "summary"]
+  }
+}

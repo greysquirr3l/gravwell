@@ -1,11 +1,6 @@
 ---
 applyTo: "**/src/**/*.{rs}"
 description: "Rust library development patterns, performance optimizations, and Gravwell gravity simulation best practices"
-references:
-  - rust_book: "https://doc.rust-lang.org/book/"
-  - nalgebra_docs: "https://docs.rs/nalgebra/"
-  - criterion_docs: "https://docs.rs/criterion/"
-  - rust_library_guide: "https://doc.rust-lang.org/cargo/guide/"
 ---
 
 # Gravwell - Rust Library Development Standards

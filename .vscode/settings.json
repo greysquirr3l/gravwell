@@ -323,14 +323,19 @@
     "MD010": false,  // Hard tabs - allow tabs in code blocks (Makefiles)
     "MD032": false,  // Blanks around lists - more flexible list formatting
     "MD036": {       // No emphasis as heading - allow emphasis for styling
-      "punctuation": ".,;:!?"
+      "punctuation": ".,;:!?()[]",
+      "emphasis_style": "*",
+      "strong_style": "**"
     }
   },
   
   // File-specific markdown lint ignores
   "markdownlint.ignore": [
     "docs/c4_diagramming_guide.md",
-    "docs/battle_tested_libraries.md"
+    "docs/battle_tested_libraries.md",
+    "docs/GRAVWELL_BRANDING.md",      // Design document with intentional emphasis styling
+    "docs/INITIAL_PROMPT.md",         // Long-form document with design emphasis
+    "docs/RUST_LIBRARY_BEST_PRACTICES.md"  // Technical guide with emphasis patterns
   ],
 
   "emmet.excludeLanguages": ["rust"],
