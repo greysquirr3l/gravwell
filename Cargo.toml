@@ -1,0 +1,55 @@
+[package]
+name = "gravwell"
+version = "0.1.0"
+edition = "2021"
+authors = ["Gravwell Contributors"]
+description = "Ultra-realistic gravity simulation library for games and astrophysics"
+repository = "https://github.com/greysquirr3l/gravwell"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+keywords = ["physics", "simulation", "gravity", "nbody", "astronomy"]
+categories = ["games", "science", "simulation", "mathematics"]
+rust-version = "1.70"
+
+[features]
+default = ["std"]
+std = ["nalgebra/std"]
+parallel = ["rayon"]
+serde = ["dep:serde", "nalgebra/serde-serialize"]
+
+[dependencies]
+nalgebra = { version = "0.32", default-features = false, features = ["macros"] }
+thiserror = "1.0"
+tracing = "0.1"
+
+# Optional dependencies
+rayon = { version = "1.7", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.0"
+approx = "0.5"
+tracing-subscriber = "0.3"
+
+[[bench]]
+name = "force_calculation"
+harness = false
+
+[[bench]]
+name = "integration_step"
+harness = false
+
+[[bench]]
+name = "full_simulation"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.bench]
+opt-level = 3
+debug = true

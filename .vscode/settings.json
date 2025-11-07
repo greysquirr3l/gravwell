@@ -1,0 +1,702 @@
+{
+  // Rust/Cargo Configuration
+  "rust-analyzer.cargo.buildScripts.enable": true,
+  "rust-analyzer.cargo.features": "all",
+  "rust-analyzer.cargo.loadOutDirsFromCheck": true,
+  "rust-analyzer.cargo.runBuildScripts": true,
+  "rust-analyzer.checkOnSave.enable": true,
+  "rust-analyzer.checkOnSave.command": "clippy",
+  "rust-analyzer.checkOnSave.extraArgs": [
+    "--all-targets",
+    "--all-features",
+    "--",
+    "-W", "clippy::all",
+    "-W", "clippy::pedantic",
+    "-W", "clippy::nursery",
+    "-W", "clippy::cargo",
+    "-D", "warnings"
+  ],
+  "rust-analyzer.diagnostics.enable": true,
+  "rust-analyzer.diagnostics.enableExperimental": true,
+  "rust-analyzer.diagnostics.disabled": [],
+  "rust-analyzer.assist.importEnforceGranularity": true,
+  "rust-analyzer.assist.importPrefix": "crate",
+  "rust-analyzer.completion.addCallArgumentSnippets": true,
+  "rust-analyzer.completion.addCallParenthesis": true,
+  "rust-analyzer.completion.postfix.enable": true,
+  "rust-analyzer.completion.privateEditable.enable": true,
+  "rust-analyzer.completion.snippets.custom": {
+    "Arc::new": {
+      "postfix": "arc",
+      "body": "Arc::new(${receiver})",
+      "requires": "std::sync::Arc",
+      "description": "Wrap the expression in `Arc::new`",
+      "scope": "expr"
+    },
+    "Rc::new": {
+      "postfix": "rc",
+      "body": "Rc::new(${receiver})",
+      "requires": "std::rc::Rc",
+      "description": "Wrap the expression in `Rc::new`",
+      "scope": "expr"
+    },
+    "Box::new": {
+      "postfix": "box",
+      "body": "Box::new(${receiver})",
+      "description": "Wrap the expression in `Box::new`",
+      "scope": "expr"
+    },
+    "Ok": {
+      "postfix": "ok",
+      "body": "Ok(${receiver})",
+      "description": "Wrap the expression in `Ok`",
+      "scope": "expr"
+    },
+    "Err": {
+      "postfix": "err",
+      "body": "Err(${receiver})",
+      "description": "Wrap the expression in `Err`",
+      "scope": "expr"
+    },
+    "Some": {
+      "postfix": "some",
+      "body": "Some(${receiver})",
+      "description": "Wrap the expression in `Some`",
+      "scope": "expr"
+    }
+  },
+  "rust-analyzer.hover.actions.enable": true,
+  "rust-analyzer.hover.actions.implementations.enable": true,
+  "rust-analyzer.hover.actions.references.enable": true,
+  "rust-analyzer.hover.actions.run.enable": true,
+  "rust-analyzer.hover.actions.debug.enable": true,
+  "rust-analyzer.hover.documentation.enable": true,
+  "rust-analyzer.hover.links.enable": true,
+  "rust-analyzer.inlayHints.bindingModeHints.enable": true,
+  "rust-analyzer.inlayHints.chainingHints.enable": true,
+  "rust-analyzer.inlayHints.closingBraceHints.enable": true,
+  "rust-analyzer.inlayHints.closureReturnTypeHints.enable": "with_block",
+  "rust-analyzer.inlayHints.discriminantHints.enable": "fieldless",
+  "rust-analyzer.inlayHints.expressionAdjustmentHints.enable": "reborrow",
+  "rust-analyzer.inlayHints.implicitDrops.enable": true,
+  "rust-analyzer.inlayHints.lifetimeElisionHints.enable": "skip_trivial",
+  "rust-analyzer.inlayHints.lifetimeElisionHints.useParameterNames": true,
+  "rust-analyzer.inlayHints.maxLength": 25,
+  "rust-analyzer.inlayHints.parameterHints.enable": true,
+  "rust-analyzer.inlayHints.reborrowHints.enable": "mutable",
+  "rust-analyzer.inlayHints.renderColons": true,
+  "rust-analyzer.inlayHints.typeHints.enable": true,
+  "rust-analyzer.inlayHints.typeHints.hideClosureInitialization": false,
+  "rust-analyzer.inlayHints.typeHints.hideNamedConstructor": false,
+  "rust-analyzer.lens.enable": true,
+  "rust-analyzer.lens.debug.enable": true,
+  "rust-analyzer.lens.implementations.enable": true,
+  "rust-analyzer.lens.references.adt.enable": true,
+  "rust-analyzer.lens.references.enumVariant.enable": true,
+  "rust-analyzer.lens.references.method.enable": true,
+  "rust-analyzer.lens.references.trait.enable": true,
+  "rust-analyzer.lens.run.enable": true,
+  "rust-analyzer.notify.cargoTomlNotFound": true,
+  "rust-analyzer.procMacro.enable": true,
+  "rust-analyzer.procMacro.ignored": {},
+  "rust-analyzer.runnables.extraArgs": [],
+  "rust-analyzer.rustc.source": "discover",
+  "rust-analyzer.rustfmt.extraArgs": [],
+  "rust-analyzer.rustfmt.overrideCommand": null,
+  "rust-analyzer.rustfmt.rangeFormatting.enable": false,
+  "rust-analyzer.semanticHighlighting.strings.enable": true,
+  "rust-analyzer.workspace.symbol.search.scope": "workspace_and_dependencies",
+  "rust-analyzer.workspace.symbol.search.kind": "only_types",
+
+  "[shellscript]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit"
+    },
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.rulers": [80, 120],
+    "files.trimTrailingWhitespace": true,
+    "editor.suggest.showWords": true,
+    "editor.wordBasedSuggestions": "currentDocument"
+  },
+
+  "[rust]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit"
+    },
+    "editor.snippetSuggestions": "top",
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "editor.wordBasedSuggestions": "off",
+    "editor.suggest.showWords": false,
+    "editor.rulers": [80, 100, 120],
+    "editor.semanticHighlighting.enabled": true,
+    "editor.inlineSuggest.enabled": true
+  },
+
+  // GitHub Copilot Configuration - 2025 Latest Settings
+  "github.copilot.enable": {
+    "rust": true,
+    "toml": true,
+    "javascript": true,
+    "typescript": true,
+    "yaml": true,
+    "dockerfile": true,
+    "makefile": true,
+    "json": true,
+    "markdown": true,
+    "*": true
+  },
+  "github.copilot.advanced": {
+    "inlineSuggestCount": 3,
+    "blockSuggestCount": 5,
+    "enableAutoCompletions": true,
+    "length": 500,
+    "listCount": 10,
+    "top_p": 1
+  },
+  "github.copilot.suggest": {
+    "enable": true,
+    "showInlineSuggestions": true,
+    "showEditorCompletions": true
+  },
+  "github.copilot.editor.enableAutoCompletions": true,
+  "github.copilot.editor.enableCodeActions": true,
+  "github.copilot.statusBar.enabled": true,
+
+  // Copilot Chat - Enhanced Configuration
+  "github.copilot.chat.enable": true,
+  "github.copilot.chat.welcomeMessage": "enabled",
+  "github.copilot.chat.transparent": false,
+  "github.copilot.conversation.enableAutoSend": false,
+  "github.copilot.conversation.showWelcomeMessage": true,
+
+  // Custom Instructions Configuration (2025)
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+
+  // Prompt Files Configuration (2025)
+  "chat.promptFiles": true,
+
+  // Agent Mode and Autonomous Coding
+  "github.copilot.workspace.enable": true,
+  "github.copilot.chat.agentMode.enable": true,
+  "github.copilot.experimental": {
+    "panel": true,
+    "agentMode": true,
+    "mcpServers": true
+  },
+
+  // Language Models and Advanced Features
+  "github.copilot.chat.model": "claude-4.0-sonnet",
+  "github.copilot.chat.languageModelSelection": "auto",
+
+  // Chat Mode Configuration
+  "github.copilot.chat.defaultMode": "agent",
+  "github.copilot.chat.modes": {
+    "agent": {
+      "enabled": true,
+      "tools": ["workspace", "terminal", "search"]
+    }
+  },
+
+  "github.copilot.chat.reviewSelection.instructions": [
+    { "text": "Focus on Rust best practices, memory safety, ownership patterns, and Clean Architecture compliance." },
+    { "text": "Check for proper error handling with Result types, resource cleanup, and panic prevention." },
+    { "text": "Verify adherence to domain-driven design patterns and CQRS implementation." },
+    { "text": "Always run clippy on any Rust code created or modified." },
+    { "text": "Reference .github/copilot-instructions.md for comprehensive architectural guidance." },
+    { "text": "Use tagged prompts: #generate for code creation, #analysis for reviews, #validate for architecture checks." },
+    { "text": "Follow security-first repository design patterns from docs/security_first_repository_design.md" },
+    { "text": "Ensure proper use of borrowing, lifetimes, and zero-cost abstractions." }
+  ],
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    { "text": "Use conventional commit format with scope when applicable." },
+    { "text": "Reference issue numbers when relevant." },
+    { "text": "Follow branch naming guidelines from .github/copilot-instructions.md" },
+    { "text": "Use project specific scopes: cargo, clippy, docs, tests, lib, bin, domain, application, adapters, infrastructure, entities, repositories, services" },
+    { "text": "Consider Rust-specific changes: use 'cargo:' for Cargo.toml updates, 'clippy:' for linting fixes" }
+  ],
+
+  // Shellcheck integration settings
+  "shellcheck.enable": true,
+  "shellcheck.enableQuickFix": true,
+  "shellcheck.run": "onType",
+  "shellcheck.exclude": [],
+  "shellcheck.customArgs": [
+    "--external-sources",
+    "--check-sourced"
+  ],
+    "shellcheck.ignorePatterns": {
+    "**/*.zsh": true,
+    "**/*.bash_profile": true,
+    "**/*.bashrc": true
+  },
+  "shellcheck.useWorkspaceRootAsCwd": true,
+
+  // Git commit validation settings
+  "git.inputValidation": true,
+  "git.inputValidationLength": 50,
+  "git.inputValidationSubjectLength": 50,
+  "git.showCommitInput": true,
+  "git.verboseCommit": true,
+
+  "files.associations": {
+    "*.rs": "rust",
+    "Cargo.toml": "toml",
+    "Cargo.lock": "toml",
+    "*.toml": "toml",
+    "Dockerfile*": "dockerfile",
+    "docker-compose*.yml": "dockercompose",
+    "docker-compose*.yaml": "dockercompose",
+    "*.sh": "shellscript",
+    "*.bash": "shellscript",
+    "commit-msg": "shellscript",
+    "pre-commit": "shellscript",
+    "post-commit": "shellscript",
+    "pre-push": "shellscript",
+    "scripts/*": "shellscript"
+  },
+
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/*.exe": true,
+    "**/target/debug": true,
+    "**/target/release": true,
+    "**/.vscode/settings.json": false
+  },
+
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/target/**": true,
+    "**/tmp/**": true
+  },
+
+  "sqltools.format": {
+    "linesBetweenQueries": 2,
+    "reservedWordCase": "upper"
+  },
+
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "Cargo.toml": "Cargo.lock",
+    "Dockerfile": "Dockerfile*, .dockerignore, docker-compose*, .docker*",
+    "README.md": "README*, LICENSE*, CHANGELOG*, CONTRIBUTING*, SECURITY*",
+    "*.rs": "${capture}_test.rs, ${capture}.md",
+    "lib.rs": "main.rs",
+    "mod.rs": "*.rs"
+  },
+
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/target": true,
+    "**/.git": true,
+    "**/tmp": true,
+    "**/*.rlib": true,
+    "**/*.rmeta": true,
+    "**/Cargo.lock": false
+  },
+
+  "[markdown]": {
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+    "editor.rulers": [80, 120, 160],
+    "files.trimTrailingWhitespace": false
+  },
+
+  // Markdown linting configuration
+  "markdownlint.config": {
+    "MD013": {
+      "line_length": 180,
+      "code_blocks": false,
+      "tables": false
+    },
+    "MD029": false,  // Ordered list item prefix - allow different numbering styles
+    "MD010": false,  // Hard tabs - allow tabs in code blocks (Makefiles)
+    "MD032": false,  // Blanks around lists - more flexible list formatting
+    "MD036": {       // No emphasis as heading - allow emphasis for styling
+      "punctuation": ".,;:!?"
+    }
+  },
+  
+  // File-specific markdown lint ignores
+  "markdownlint.ignore": [
+    "docs/c4_diagramming_guide.md",
+    "docs/battle_tested_libraries.md"
+  ],
+
+  "emmet.excludeLanguages": ["rust"],
+
+  "security.workspace.trust.enabled": true,
+  "security.workspace.trust.startupPrompt": "always",
+  "security.workspace.trust.untrustedFiles": "open",
+  "extensions.ignoreRecommendations": false,
+  "extensions.recommendations": [
+    "github.copilot",
+    "github.copilot-chat",
+    "rust-lang.rust-analyzer",
+    "tamasfe.even-better-toml",
+    "vadimcn.vscode-lldb",
+    "ms-azuretools.vscode-docker",
+    "esbenp.prettier-vscode",
+    "ms-vscode.test-adapter-converter",
+    "humao.rest-client",
+    "redhat.vscode-yaml",
+    "ms-vscode.makefile-tools",
+    "timonwong.shellcheck",
+    "foxundermoon.shell-format",
+    "panicbit.cargo",
+    "swellaby.vscode-rust-test-adapter",
+    "bungcip.better-toml"
+  ],
+
+  "terminal.integrated.env.osx": {
+    "RUST_BACKTRACE": "1",
+    "CARGO_TERM_COLOR": "always",
+    "RUSTFLAGS": "-D warnings"
+    // Note: GitHub authentication is handled through:
+    // 1. VS Code's built-in Git credential manager (preferred)
+    // 2. GitHub CLI: gh auth login (for terminal operations)
+    // 3. Git credential helper configured in ~/.gitconfig
+    // Setting tokens as env vars in VS Code settings is not recommended for security
+  },
+
+  "terminal.integrated.profiles.osx": {
+    "bash": {
+      "path": "/opt/homebrew/bin/bash",
+      "args": ["--rcfile", "~/.bashrc_simple"],
+      "icon": "terminal-bash"
+      // Note: ~/.bashrc_simple includes automatic VS Code shell integration
+      // and redirects to full ~/.bashrc when needed
+    },
+    "PowerShell": {
+      "path": "/usr/local/bin/pwsh",
+      "icon": "terminal-powershell",
+      "color": "terminal.ansiBlue"
+      // Note: PowerShell profile includes VS Code shell integration
+    },
+    "zsh": {
+      "path": "zsh",
+      "args": ["-c", "source ~/.bashrc_simple 2>/dev/null || true; exec zsh"]
+    }
+  },
+
+  "terminal.integrated.defaultProfile.osx": "bash",
+
+  // Shell Integration Configuration for VS Code and VS Code Insiders
+  // Note: Shell integration is handled automatically by ~/.bashrc and ~/.bashrc_simple
+  "terminal.integrated.shellIntegration.enabled": true,
+  "terminal.integrated.shellIntegration.decorationsEnabled": "both", 
+  "terminal.integrated.shellIntegration.showCommandGuide": true,
+  "terminal.integrated.shellIntegration.history": 100,
+  
+  // Advanced shell integration features
+  "terminal.integrated.shellIntegration.suggestEnabled": true,
+  
+  // Sticky scroll and enhanced terminal features
+  "terminal.integrated.stickyScroll.enabled": true,
+  "terminal.integrated.suggest.enabled": true,
+  "terminal.integrated.suggest.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": true
+  },
+  "terminal.integrated.suggest.runOnEnter": "never",
+
+  "terminal.integrated.fontFamily": "'FiraCode Nerd Font Mono', 'Hack Nerd Font Mono', 'SF Mono', 'Monaco', 'Inconsolata', 'Consolas', 'Courier New', monospace",
+  "terminal.integrated.fontSize": 10,
+  "terminal.integrated.fontWeight": "normal",
+  "terminal.integrated.lineHeight": 1.2,
+
+  // Terminal command navigation and accessibility
+  "terminal.integrated.commandsToSkipShell": [
+    "workbench.action.terminal.focusFind",
+    "workbench.action.terminal.hideFind",
+    "workbench.action.terminal.runRecentCommand",
+    "workbench.action.terminal.goToRecentDirectory"
+  ],
+  
+  // Enhanced terminal experience
+  "terminal.integrated.enableMultiLinePasteWarning": "auto",
+  "terminal.integrated.rightClickBehavior": "selectWord",
+  "terminal.integrated.tabs.location": "right",
+  "terminal.integrated.tabs.showActions": "singleTerminal",
+  
+  // Command execution and navigation
+  "terminal.integrated.allowChords": false,
+  "terminal.integrated.allowMnemonics": false,
+  "terminal.integrated.altClickMovesCursor": true,
+
+  "editor.fontFamily": "'FiraCode Nerd Font Mono', 'Hack Nerd Font Mono', 'SF Mono', 'Monaco', 'Inconsolata', 'Consolas', 'Courier New', monospace",
+  "editor.fontSize": 11,
+  "editor.fontWeight": "normal",
+  "editor.lineHeight": 1.4,
+  "editor.fontLigatures": true,
+
+  "debug.console.fontSize": 11,
+  "debug.console.lineHeight": 22,
+
+  "problems.decorations.enabled": true,
+  "problems.sortOrder": "severity",
+
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+
+  // Rust + Dark Theme Color Scheme
+  "workbench.colorTheme": "Default Dark Modern",
+  "workbench.colorCustomizations": {
+    // Rust signature orange/brown with dark accents
+    "editor.background": "#1e1e1e",
+    "editor.foreground": "#dea584",
+    "sideBar.background": "#252526",
+    "sideBar.foreground": "#cccccc",
+    "activityBar.background": "#333333",
+    "activityBar.foreground": "#dea584",
+    "activityBar.activeBorder": "#ce9178",
+    "activityBar.inactiveForeground": "#888888",
+    "statusBar.background": "#333333",
+    "statusBar.foreground": "#dea584",
+    "statusBar.debuggingBackground": "#ce9178",
+    "statusBar.noFolderBackground": "#333333",
+    "titleBar.activeBackground": "#252526",
+    "titleBar.activeForeground": "#dea584",
+    "titleBar.inactiveBackground": "#333333",
+    "titleBar.inactiveForeground": "#888888",
+    "menu.background": "#252526",
+    "menu.foreground": "#cccccc",
+    "menu.selectionBackground": "#094771",
+    "menu.selectionForeground": "#ffffff",
+    "tab.activeBackground": "#1e1e1e",
+    "tab.activeForeground": "#dea584",
+    "tab.inactiveBackground": "#2d2d30",
+    "tab.inactiveForeground": "#888888",
+    "tab.border": "#252526",
+    "editorGroupHeader.tabsBackground": "#252526",
+    "editorGroup.border": "#444444",
+    "panel.background": "#252526",
+    "panel.border": "#444444",
+    "terminal.background": "#1e1e1e",
+    "terminal.foreground": "#cccccc",
+    "terminalCursor.background": "#dea584",
+    "terminalCursor.foreground": "#dea584",
+    "button.background": "#0e639c",
+    "button.foreground": "#ffffff",
+    "button.hoverBackground": "#1177bb",
+    "input.background": "#3c3c3c",
+    "input.foreground": "#cccccc",
+    "input.border": "#888888",
+    "inputOption.activeBorder": "#dea584",
+    "dropdown.background": "#252526",
+    "dropdown.foreground": "#cccccc",
+    "dropdown.border": "#888888",
+    "list.activeSelectionBackground": "#094771",
+    "list.activeSelectionForeground": "#ffffff",
+    "list.inactiveSelectionBackground": "#3a3d41",
+    "list.hoverBackground": "#2a2d2e",
+    "scrollbar.shadow": "#000000",
+    "scrollbarSlider.background": "#79797966",
+    "scrollbarSlider.hoverBackground": "#646464b3",
+    "scrollbarSlider.activeBackground": "#bfbfbf66",
+    "badge.background": "#dea584",
+    "badge.foreground": "#1e1e1e",
+    "progressBar.background": "#dea584",
+    "editorWidget.background": "#252526",
+    "editorWidget.border": "#454545",
+    "editorSuggestWidget.background": "#252526",
+    "editorSuggestWidget.border": "#454545",
+    "editorSuggestWidget.foreground": "#cccccc",
+    "editorSuggestWidget.selectedBackground": "#094771",
+    "editorHoverWidget.background": "#252526",
+    "editorHoverWidget.border": "#454545",
+    "peekView.border": "#dea584",
+    "peekViewEditor.background": "#1e1e1e",
+    "peekViewResult.background": "#252526",
+    "peekViewTitle.background": "#3c3c3c",
+    "breadcrumb.background": "#1e1e1e",
+    "breadcrumb.foreground": "#888888",
+    "breadcrumb.focusForeground": "#dea584",
+    "breadcrumb.activeSelectionForeground": "#dea584",
+    // Git colors with Rust theme
+    "gitDecoration.modifiedResourceForeground": "#e2c08d",
+    "gitDecoration.deletedResourceForeground": "#f14c4c",
+    "gitDecoration.untrackedResourceForeground": "#73c991",
+    "gitDecoration.conflictingResourceForeground": "#e2c08d",
+    "gitDecoration.submoduleResourceForeground": "#8db9e2",
+    // Error and warning colors
+    "errorForeground": "#f14c4c",
+    "warningForeground": "#ffb454",
+    "infoForeground": "#8db9e2",
+    // Editor selection and highlighting
+    "editor.selectionBackground": "#094771",
+    "editor.selectionHighlightBackground": "#3a3d4199",
+    "editor.findMatchBackground": "#9e6a03",
+    "editor.findMatchHighlightBackground": "#ea6c004d",
+    "editor.wordHighlightBackground": "#3a3d4199",
+    "editor.wordHighlightStrongBackground": "#04395e99",
+    "editor.lineHighlightBackground": "#ffffff0d",
+    "editorLineNumber.foreground": "#858585",
+    "editorLineNumber.activeForeground": "#dea584",
+    "editorIndentGuide.background1": "#404040",
+    "editorIndentGuide.activeBackground1": "#707070",
+    "editorWhitespace.foreground": "#404040"
+  },
+
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "name": "Rust Keywords",
+        "scope": ["keyword.control.rust", "keyword.other.rust", "storage.type.rust", "storage.modifier.rust"],
+        "settings": {
+          "foreground": "#ce9178",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "name": "Rust Types",
+        "scope": ["entity.name.type.rust", "support.type.primitive.rust", "entity.name.type.primitive.rust"],
+        "settings": {
+          "foreground": "#4ec9b0",
+          "fontStyle": "italic"
+        }
+      },
+      {
+        "name": "Rust Functions and Macros",
+        "scope": ["entity.name.function.rust", "support.function.rust", "entity.name.function.macro.rust"],
+        "settings": {
+          "foreground": "#dcdcaa",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "name": "Rust Strings",
+        "scope": ["string.quoted.double.rust", "string.quoted.single.rust"],
+        "settings": {
+          "foreground": "#ce9178"
+        }
+      },
+      {
+        "name": "Rust Numbers",
+        "scope": ["constant.numeric.rust"],
+        "settings": {
+          "foreground": "#b5cea8"
+        }
+      },
+      {
+        "name": "Rust Comments",
+        "scope": ["comment.line.double-slash.rust", "comment.block.rust"],
+        "settings": {
+          "foreground": "#6a9955",
+          "fontStyle": "italic"
+        }
+      },
+      {
+        "name": "Rust Module Names",
+        "scope": ["entity.name.namespace.rust"],
+        "settings": {
+          "foreground": "#4fc1ff",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "name": "Rust Constants",
+        "scope": ["constant.other.rust", "variable.other.constant.rust"],
+        "settings": {
+          "foreground": "#4fc1ff",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "name": "Rust Operators",
+        "scope": ["keyword.operator.rust"],
+        "settings": {
+          "foreground": "#d4d4d4"
+        }
+      },
+      {
+        "name": "Rust Struct Fields",
+        "scope": ["variable.other.member.rust"],
+        "settings": {
+          "foreground": "#9cdcfe"
+        }
+      },
+      {
+        "name": "Rust Lifetime",
+        "scope": ["storage.modifier.lifetime.rust", "entity.name.type.lifetime.rust"],
+        "settings": {
+          "foreground": "#4ec9b0",
+          "fontStyle": "italic"
+        }
+      },
+      {
+        "name": "Rust Attributes",
+        "scope": ["meta.attribute.rust"],
+        "settings": {
+          "foreground": "#4fc1ff"
+        }
+      }
+    ]
+  },
+
+  "editor.semanticTokenColorCustomizations": {
+    "rules": {
+      "*.deprecated": {
+        "foreground": "#808080",
+        "fontStyle": "strikethrough"
+      },
+      "function.declaration": {
+        "foreground": "#dcdcaa",
+        "fontStyle": "bold"
+      },
+      "method.declaration": {
+        "foreground": "#dcdcaa",
+        "fontStyle": "bold"
+      },
+      "type": {
+        "foreground": "#4ec9b0",
+        "fontStyle": "italic"
+      },
+      "struct": {
+        "foreground": "#4ec9b0",
+        "fontStyle": "bold"
+      },
+      "interface": {
+        "foreground": "#b8d7a3",
+        "fontStyle": "italic bold"
+      },
+      "enum": {
+        "foreground": "#4ec9b0",
+        "fontStyle": "bold"
+      },
+      "enumMember": {
+        "foreground": "#4fc1ff",
+        "fontStyle": "bold"
+      },
+      "variable.readonly": {
+        "foreground": "#4fc1ff",
+        "fontStyle": "bold"
+      },
+      "parameter": {
+        "foreground": "#9cdcfe"
+      },
+      "property": {
+        "foreground": "#9cdcfe"
+      },
+      "lifetime": {
+        "foreground": "#4ec9b0",
+        "fontStyle": "italic"
+      },
+      "macro": {
+        "foreground": "#dcdcaa",
+        "fontStyle": "bold"
+      }
+    }
+  }
+}

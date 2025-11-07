@@ -1,0 +1,84 @@
+name: 🐛 Bug Report
+description: Create a bug report to help us improve the Gravwell physics library
+title: "[BUG]: "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe what happened and what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the bug
+      placeholder: |
+        1. Go to '...'
+        2. Run command '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+      placeholder: A clear description of what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Please provide your environment details
+      placeholder: |
+        - OS: [e.g. macOS 13.0, Windows 11, Ubuntu 22.04]
+        - Rust Version: [e.g. 1.70.0]
+        - Target Platform: [e.g. native x86_64, wasm32-unknown-unknown]
+        - Gravwell Version: [e.g. 0.1.0]
+        - Dependencies: [e.g. nalgebra 0.32.0, criterion 0.5.0]
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: |
+        - Error messages or logs
+        - Physics parameters (particle count, timestep, etc.)
+        - Numerical accuracy issues or energy drift
+        - Performance measurements if applicable
+        - Workarounds you've tried
+        - Impact on your simulation accuracy or performance
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm you have completed these steps
+      options:
+        - label: I have searched for existing issues before creating this one
+          required: true
+        - label: I have provided detailed reproduction steps
+          required: true
+        - label: I have included my environment details
+          required: true
+        - label: This issue is specific to the Gravwell physics library
+          required: true

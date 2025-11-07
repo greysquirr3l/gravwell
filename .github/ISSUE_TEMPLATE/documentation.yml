@@ -1,0 +1,102 @@
+name: 📚 Documentation Issue
+description: Report issues with documentation or suggest improvements
+title: "[DOCS]: "
+labels: ["documentation", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us improve the documentation! Whether it's a typo, unclear instructions, or missing information.
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: Which type of documentation needs attention?
+      options:
+        - README.md
+        - API Documentation (lib.rs, module docs)
+        - Examples (solar_system.rs, binary_orbit.rs, etc.)
+        - Physics Validation Guides
+        - Performance Optimization Guides
+        - Contributing Guidelines
+        - Scientific Accuracy Documentation
+        - Cross-Platform Build Instructions
+        - Code Comments
+        - Other (specify below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue Description
+      description: What's wrong with the current documentation?
+      placeholder: |
+        Examples:
+        - Physics algorithm explanation is unclear or confusing
+        - Integration steps are missing or incorrect
+        - Mathematical notation or formulas have errors
+        - Performance benchmarks are outdated
+        - Missing examples for specific physics scenarios
+        - API documentation is incomplete or inaccurate
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: Where exactly is the issue? (File name, section, line number if known)
+      placeholder: |
+        e.g., README.md, Physics Algorithms section
+        e.g., crates/gravwell/src/integrators/verlet.rs, line 45
+        e.g., examples/solar_system.rs, configuration section
+        e.g., docs/performance_guide.md, SIMD optimization
+
+  - type: textarea
+    id: suggested-improvement
+    attributes:
+      label: Suggested Improvement
+      description: How should this be fixed or improved?
+      placeholder: |
+        What would make this documentation better?
+        If you have specific text suggestions, include them here.
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact Level
+      description: How does this issue affect users?
+      options:
+        - Low (minor typo or formatting)
+        - Medium (unclear instructions that could confuse users)
+        - High (incorrect information that could cause issues)
+        - Critical (missing information that blocks setup/usage)
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: User Context
+      description: What were you trying to do when you found this issue?
+      placeholder: |
+        e.g., Setting up a new N-body simulation for the first time
+        e.g., Looking for force calculation algorithm examples
+        e.g., Troubleshooting energy conservation in long simulations
+        e.g., Optimizing performance for large particle counts
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have checked if this issue already exists
+          required: true
+        - label: I have provided specific location information
+          required: true
+        - label: I have suggested how to improve the documentation
+          required: true

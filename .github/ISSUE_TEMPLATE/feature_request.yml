@@ -1,0 +1,127 @@
+name: 💡 Feature Request
+description: Suggest a new feature or enhancement for the Gravwell physics library
+title: "[FEATURE]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a new feature! Your ideas help make this workspace better for everyone.
+
+  - type: textarea
+    id: feature-summary
+    attributes:
+      label: Feature Summary
+      description: A brief summary of the feature you'd like to see
+      placeholder: Describe the feature in 1-2 sentences
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem Statement
+      description: What problem would this feature solve?
+      placeholder: |
+        Is your feature request related to a problem? Please describe.
+        A clear and concise description of what the problem is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see
+      placeholder: |
+        A clear and concise description of what you want to happen.
+        How would this feature work? What would the user experience be?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: feature-category
+    attributes:
+      label: Feature Category
+      description: Which area does this feature relate to?
+      options:
+        - Physics Algorithms (integrators, force calculations)
+        - Performance Optimization (SIMD, parallelization)
+        - API Design & Ergonomics
+        - Collision Detection Systems
+        - Validation & Testing Tools
+        - Documentation & Examples
+        - Cross-Platform Support
+        - Scientific Accuracy & Validation
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature to your workflow?
+      options:
+        - Low (nice to have)
+        - Medium (would improve workflow)
+        - High (significant impact on productivity)
+        - Critical (blocking current work)
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Have you considered any alternative solutions or workarounds?
+      placeholder: Describe any alternative solutions or features you've considered
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Provide specific examples of how this feature would be used
+      placeholder: |
+        Example scenarios:
+        1. When simulating [type] physics system...
+        2. When optimizing for [performance target]...
+        3. When validating against [analytical solution]...
+        4. When integrating with [game engine/scientific software]...
+
+  - type: textarea
+    id: implementation-ideas
+    attributes:
+      label: Implementation Ideas
+      description: Do you have ideas about how this could be implemented?
+      placeholder: |
+        If you have technical ideas or suggestions for implementation,
+        please share them here. This is optional but helpful!
+
+  - type: checkboxes
+    id: compatibility
+    attributes:
+      label: Compatibility Considerations
+      description: Please check all that apply
+      options:
+        - label: This feature should work across all supported platforms (native + WASM)
+        - label: This feature is specific to certain physics algorithms (specify in description)
+        - label: This feature should maintain scientific accuracy and determinism
+        - label: This feature may require breaking API changes (justified in description)
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm you have completed these steps
+      options:
+        - label: I have searched for existing feature requests
+          required: true
+        - label: I have provided a clear problem statement and proposed solution
+          required: true
+        - label: I have considered the impact on existing functionality
+          required: true
+        - label: This feature aligns with the goals of high-performance physics simulation
+          required: true
