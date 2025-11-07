@@ -15,6 +15,8 @@ pub struct Body {
     pub position: Position,
     /// Velocity vector (m/s).
     pub velocity: Velocity,
+    /// Radius for collision detection (meters).
+    pub radius: Scalar,
 }
 
 impl Body {
@@ -24,6 +26,7 @@ impl Body {
             mass: 1.0,
             position: Position::zeros(),
             velocity: Velocity::zeros(),
+            radius: 0.0,
         }
     }
 
@@ -31,6 +34,11 @@ impl Body {
     pub fn with_mass(mut self, mass: Mass) -> Self {
         self.mass = mass;
         self
+    }
+
+    /// Set the mass of this body (alias for with_mass for backwards compatibility).
+    pub fn mass(self, mass: Mass) -> Self {
+        self.with_mass(mass)
     }
 
     /// Set the position of this body.
@@ -42,6 +50,12 @@ impl Body {
     /// Set the velocity of this body.
     pub fn with_velocity(mut self, velocity: [f64; 3]) -> Self {
         self.velocity = Velocity::new(velocity[0], velocity[1], velocity[2]);
+        self
+    }
+
+    /// Set the radius of this body.
+    pub fn with_radius(mut self, radius: Scalar) -> Self {
+        self.radius = radius;
         self
     }
 
@@ -92,6 +106,8 @@ pub struct ParticleSet {
     positions: Vec<Position>,
     /// Velocities of all particles.
     velocities: Vec<Velocity>,
+    /// Radii of all particles (for collision detection).
+    radii: Vec<Scalar>,
 }
 
 impl ParticleSet {
@@ -101,6 +117,7 @@ impl ParticleSet {
             masses: Vec::new(),
             positions: Vec::new(),
             velocities: Vec::new(),
+            radii: Vec::new(),
         }
     }
 
@@ -110,6 +127,7 @@ impl ParticleSet {
             masses: Vec::with_capacity(capacity),
             positions: Vec::with_capacity(capacity),
             velocities: Vec::with_capacity(capacity),
+            radii: Vec::with_capacity(capacity),
         }
     }
 
@@ -120,6 +138,7 @@ impl ParticleSet {
         self.masses.push(body.mass);
         self.positions.push(body.position);
         self.velocities.push(body.velocity);
+        self.radii.push(body.radius);
 
         Ok(())
     }
@@ -216,6 +235,7 @@ impl ParticleSet {
                 mass: self.masses[i],
                 position: self.positions[i],
                 velocity: self.velocities[i],
+                radius: self.radii.get(i).copied().unwrap_or(0.0),
             };
             body.validate()
                 .map_err(|e| GravwellError::invalid_particle(format!("Particle {}: {}", i, e)))?;

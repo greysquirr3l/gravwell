@@ -17,12 +17,22 @@ pub use crate::{
     },
     error::{GravwellError, Result},
     forces::{barnes_hut::BarnesHut, direct::DirectGravity},
-    integrators::{ias15::IAS15, leapfrog::Leapfrog, rk4::RungeKutta4, verlet::VelocityVerlet},
+    integrators::{
+        euler::SemiImplicitEuler, ias15::IAS15, leapfrog::Leapfrog, rk4::RungeKutta4,
+        verlet::VelocityVerlet,
+    },
     lod::{DetailLevel, LODPerformanceStats, LODSystem},
     simd::{SimdLevel, VectorizedGravity},
     types::*,
     types::{Scalar, Vector3},
     utils::constants::*,
+};
+
+// Parallel processing re-exports (when feature is enabled)
+#[cfg(feature = "parallel")]
+pub use crate::{
+    forces::parallel::{ChunkSizeStrategy, ParallelDirectGravity},
+    integrators::parallel::ParallelVelocityVerlet,
 };
 
 #[cfg(feature = "std")]

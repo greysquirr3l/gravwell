@@ -1,6 +1,6 @@
 [package]
 name = "gravwell"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Gravwell Contributors"]
 description = "Ultra-realistic gravity simulation library for games and astrophysics"
@@ -15,6 +15,7 @@ rust-version = "1.70"
 default = ["std"]
 std = ["nalgebra/std"]
 parallel = ["rayon"]
+simd = []
 serde = ["dep:serde", "nalgebra/serde-serialize"]
 
 [dependencies]

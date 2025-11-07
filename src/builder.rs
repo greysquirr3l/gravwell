@@ -11,9 +11,21 @@ use crate::{
 };
 
 /// Handle for referencing bodies in the simulation.
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct BodyHandle {
     index: usize,
+}
+
+impl BodyHandle {
+    /// Create a new body handle with the given index.
+    pub fn new(index: usize, _generation: u32) -> Self {
+        Self { index }
+    }
+
+    /// Get the index of this handle.
+    pub fn index(&self) -> usize {
+        self.index
+    }
 }
 
 /// Builder pattern for creating configured simulations.

@@ -494,9 +494,9 @@ graph TD
     C --> C4[rk4.rs - Runge-Kutta 4]
     C --> C5[ias15.rs - IAS15 Adaptive]
 
-    D --> D1[direct.rs - O(N²) Direct]
-    D --> D2[barnes_hut.rs - O(N log N) Tree]
-    D --> D3[fmm.rs - O(N) Fast Multipole]
+    D --> D1[direct.rs - O N squared Direct]
+    D --> D2[barnes_hut.rs - O N log N Tree]
+    D --> D3[fmm.rs - O N Fast Multipole]
 
     E --> E1[broad_phase.rs - Spatial Partitioning]
     E --> E2[narrow_phase.rs - Exact Tests]

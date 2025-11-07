@@ -53,6 +53,7 @@ pub mod integrators;
 pub mod lod;
 pub mod memory;
 pub mod simd;
+pub mod spatial;
 pub mod utils;
 
 #[cfg(feature = "std")]
