@@ -8,6 +8,7 @@ use crate::{
     },
     error::Result,
     types::{Acceleration, Time},
+    validation::Validator,
 };
 
 /// Velocity Verlet integrator.
@@ -32,12 +33,35 @@ impl Integrator for VelocityVerlet {
     {
         validate_timestep(dt)?;
 
+        // Validate particle system before integration
+        particles.validate()?;
+
         let n = particles.len();
         let mut accelerations = vec![Acceleration::zeros(); n];
 
         // Calculate initial accelerations
         forces.calculate_accelerations(particles, &mut accelerations)?;
         validate_accelerations(&accelerations)?;
+
+        // Perform timestep stability analysis
+        let stats = Validator::compute_system_statistics(
+            particles.positions(),
+            particles.velocities(),
+        );
+        
+        if !stats.is_stable() {
+            return Err(crate::error::GravwellError::numerical_instability(
+                "System appears unstable before integration",
+                "Check for particle collisions or invalid initial conditions",
+            ));
+        }
+
+        // Check if timestep is appropriate for system dynamics
+        let suggested_dt = stats.suggest_timestep();
+        if dt > suggested_dt * 10.0 {
+            // Allow some tolerance, but warn if timestep is much too large
+            Validator::analyze_timestep_stability(dt, stats.max_velocity, stats.min_distance)?;
+        }
 
         // Update positions: x += v*dt + 0.5*a*dt²
         for i in 0..n {

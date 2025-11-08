@@ -1,6 +1,7 @@
 //! Simulation builder for configuring Gravwell simulations.
 
 use crate::{
+    adaptive::AdaptiveTimestepController,
     core::{
         forces::ForceCalculator,
         integrator::Integrator,
@@ -42,6 +43,7 @@ pub struct SimulationBuilder<I = (), F = ()> {
     integrator: Option<I>,
     force_calculator: Option<F>,
     particles: ParticleSet,
+    adaptive_timestep: Option<AdaptiveTimestepController>,
 }
 
 impl SimulationBuilder<(), ()> {
@@ -51,6 +53,7 @@ impl SimulationBuilder<(), ()> {
             integrator: None,
             force_calculator: None,
             particles: ParticleSet::new(),
+            adaptive_timestep: None,
         }
     }
 }
@@ -65,6 +68,7 @@ impl<I, F> SimulationBuilder<I, F> {
             integrator: Some(integrator),
             force_calculator: self.force_calculator,
             particles: self.particles,
+            adaptive_timestep: self.adaptive_timestep,
         }
     }
 
@@ -77,7 +81,14 @@ impl<I, F> SimulationBuilder<I, F> {
             integrator: self.integrator,
             force_calculator: Some(force_calculator),
             particles: self.particles,
+            adaptive_timestep: self.adaptive_timestep,
         }
+    }
+
+    /// Set the adaptive timestep controller.
+    pub fn with_adaptive_timestep(mut self, controller: AdaptiveTimestepController) -> Self {
+        self.adaptive_timestep = Some(controller);
+        self
     }
 
     /// Add a body to the initial conditions.
@@ -110,6 +121,7 @@ impl<I, F> SimulationBuilder<I, F> {
             integrator,
             force_calculator,
             particles: self.particles,
+            adaptive_timestep: self.adaptive_timestep,
         })
     }
 }
@@ -125,6 +137,7 @@ pub struct Simulation<I, F> {
     integrator: I,
     force_calculator: F,
     particles: ParticleSet,
+    adaptive_timestep: Option<AdaptiveTimestepController>,
 }
 
 impl<I, F> Simulation<I, F>
@@ -136,6 +149,67 @@ where
     pub fn step(&mut self, dt: Time) -> Result<()> {
         self.integrator
             .step(&mut self.particles, &self.force_calculator, dt)
+    }
+
+    /// Step the simulation with adaptive timestep control.
+    /// Returns the actual timestep used.
+    pub fn step_adaptive(&mut self) -> Result<Time> {
+        if self.adaptive_timestep.is_none() {
+            return Err(GravwellError::configuration(
+                "No adaptive timestep controller configured",
+            ));
+        }
+
+        // Get current state for error estimation
+        let positions: Vec<_> = (0..self.particles.len())
+            .map(|i| *self.particles.position(i))
+            .collect();
+        let velocities: Vec<_> = (0..self.particles.len())
+            .map(|i| *self.particles.velocity(i))
+            .collect();
+        let masses = self.particles.masses();
+
+        // Calculate current energy for error estimation
+        let current_energy = self.total_energy();
+
+        // Calculate forces for the controller
+        let mut forces = vec![Vector3::zeros(); self.particles.len()];
+        self.force_calculator
+            .calculate_forces(&self.particles, &mut forces)?;
+
+        // Update the controller with current state and get new timestep
+        let new_timestep = {
+            let controller = self.adaptive_timestep.as_mut().unwrap();
+            controller.update_timestep(
+                &positions,
+                &velocities,
+                &forces,
+                masses,
+                Some(current_energy),
+            )
+        };
+
+        // Perform the integration step with the (potentially updated) timestep
+        self.step(new_timestep)?;
+
+        Ok(new_timestep)
+    }
+
+    /// Get the current adaptive timestep (if configured).
+    pub fn current_adaptive_timestep(&self) -> Option<Time> {
+        self.adaptive_timestep
+            .as_ref()
+            .map(|c| c.current_timestep())
+    }
+
+    /// Get the adaptive timestep controller (if configured).
+    pub fn adaptive_controller(&self) -> Option<&AdaptiveTimestepController> {
+        self.adaptive_timestep.as_ref()
+    }
+
+    /// Get mutable access to the adaptive timestep controller (if configured).
+    pub fn adaptive_controller_mut(&mut self) -> Option<&mut AdaptiveTimestepController> {
+        self.adaptive_timestep.as_mut()
     }
 
     /// Get read-only access to the particle set.

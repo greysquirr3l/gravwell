@@ -52,9 +52,11 @@ pub mod forces;
 pub mod integrators;
 pub mod lod;
 pub mod memory;
+pub mod recovery;
 pub mod simd;
 pub mod spatial;
 pub mod utils;
+pub mod validation;
 
 #[cfg(feature = "std")]
 pub mod collision;

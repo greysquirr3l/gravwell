@@ -1,9 +1,9 @@
 //! Particle and body definitions for the simulation.
 
 use crate::{
-    core::math::Math,
-    error::{GravwellError, Result},
+    error::Result,
     types::{Mass, Position, Scalar, Velocity},
+    validation::Validator,
 };
 
 /// A single gravitational body in the simulation.
@@ -61,25 +61,14 @@ impl Body {
 
     /// Validate that this body has physically reasonable values.
     pub fn validate(&self) -> Result<()> {
-        if self.mass <= 0.0 || !self.mass.is_finite() {
-            return Err(GravwellError::invalid_particle(format!(
-                "Invalid mass: {}",
-                self.mass
-            )));
-        }
+        Validator::validate_mass(self.mass, None)?;
 
-        if !Math::is_valid_vector(&self.position) {
-            return Err(GravwellError::invalid_particle(format!(
-                "Invalid position: [{}, {}, {}]",
-                self.position.x, self.position.y, self.position.z
-            )));
-        }
+        // Use index 0 as a placeholder since we don't have actual particle index in Body
+        Validator::validate_position(&self.position, 0)?;
+        Validator::validate_velocity(&self.velocity, 0)?;
 
-        if !Math::is_valid_vector(&self.velocity) {
-            return Err(GravwellError::invalid_particle(format!(
-                "Invalid velocity: [{}, {}, {}]",
-                self.velocity.x, self.velocity.y, self.velocity.z
-            )));
+        if self.radius > 0.0 {
+            Validator::validate_radius(self.radius, 0)?;
         }
 
         Ok(())
@@ -230,17 +219,17 @@ impl ParticleSet {
 
     /// Validate all particles in the set.
     pub fn validate(&self) -> Result<()> {
-        for i in 0..self.len() {
-            let body = Body {
-                mass: self.masses[i],
-                position: self.positions[i],
-                velocity: self.velocities[i],
-                radius: self.radii.get(i).copied().unwrap_or(0.0),
-            };
-            body.validate()
-                .map_err(|e| GravwellError::invalid_particle(format!("Particle {}: {}", i, e)))?;
-        }
-        Ok(())
+        // Use the comprehensive validation system
+        Validator::validate_particle_system(
+            &self.positions,
+            &self.velocities,
+            &self.masses,
+            if self.radii.is_empty() {
+                None
+            } else {
+                Some(&self.radii)
+            },
+        )
     }
 }
 

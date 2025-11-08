@@ -22,10 +22,12 @@ pub use crate::{
         verlet::VelocityVerlet,
     },
     lod::{DetailLevel, LODPerformanceStats, LODSystem},
+    recovery::{AdaptiveRecoveryResult, ErrorRecovery, RecoveryAction, RecoveryResult},
     simd::{SimdLevel, VectorizedGravity},
     types::*,
     types::{Scalar, Vector3},
     utils::constants::*,
+    validation::{SystemStatistics, Validator},
 };
 
 // Parallel processing re-exports (when feature is enabled)

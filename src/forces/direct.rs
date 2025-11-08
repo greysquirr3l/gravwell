@@ -5,6 +5,7 @@ use crate::{
     error::{GravwellError, Result},
     types::{Force, Scalar, Vector3},
     utils::constants::G,
+    validation::Validator,
 };
 
 /// Direct N-body gravitational force calculator.
@@ -29,8 +30,42 @@ impl DirectGravity {
     /// Softening prevents infinite forces when particles get very close.
     /// The softening parameter should be much smaller than typical
     /// inter-particle distances.
-    pub fn with_softening(softening: Scalar) -> Self {
-        Self { softening }
+    pub fn with_softening(softening: Scalar) -> Result<Self> {
+        if !softening.is_finite() || softening < 0.0 {
+            return Err(GravwellError::configuration(format!(
+                "Invalid softening parameter: {}. Must be non-negative and finite",
+                softening
+            )));
+        }
+        Ok(Self { softening })
+    }
+
+    /// Set the softening parameter.
+    pub fn set_softening(&mut self, softening: Scalar) -> Result<()> {
+        if !softening.is_finite() || softening < 0.0 {
+            return Err(GravwellError::configuration(format!(
+                "Invalid softening parameter: {}. Must be non-negative and finite",
+                softening
+            )));
+        }
+        self.softening = softening;
+        Ok(())
+    }
+
+    /// Get the current softening parameter.
+    pub fn softening(&self) -> Scalar {
+        self.softening
+    }
+
+    /// Validate the force calculator configuration.
+    pub fn validate(&self) -> Result<()> {
+        if !self.softening.is_finite() || self.softening < 0.0 {
+            return Err(GravwellError::configuration(format!(
+                "Invalid softening parameter: {}. Must be non-negative and finite",
+                self.softening
+            )));
+        }
+        Ok(())
     }
 
     /// Calculate gravitational force between two particles.
@@ -66,6 +101,39 @@ impl ForceCalculator for DirectGravity {
                 forces.len(),
                 n
             )));
+        }
+
+        // Validate particle system before force calculation
+        particles.validate()?;
+
+        // Validate softening parameter
+        if !self.softening.is_finite() || self.softening < 0.0 {
+            return Err(GravwellError::force_calculation(format!(
+                "Invalid softening parameter: {}. Must be non-negative and finite",
+                self.softening
+            )));
+        }
+
+        // Check for minimum particle count
+        if n < 2 {
+            // For 0 or 1 particles, forces are zero (already handled by initialization)
+            for force in forces.iter_mut() {
+                *force = Force::zeros();
+            }
+            return Ok(());
+        }
+
+        // Analyze system stability
+        let system_stats = Validator::compute_system_statistics(
+            particles.positions(),
+            particles.velocities(),
+        );
+
+        if !system_stats.is_stable() {
+            return Err(GravwellError::numerical_instability(
+                "System appears unstable for force calculation",
+                "Check for particle collisions or invalid positions",
+            ));
         }
 
         // Initialize all forces to zero

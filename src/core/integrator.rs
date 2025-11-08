@@ -5,6 +5,7 @@ use crate::{
     core::particle::ParticleSet,
     error::Result,
     types::{Acceleration, Time},
+    validation::Validator,
 };
 
 /// Trait for numerical integration methods.
@@ -56,13 +57,7 @@ pub trait Integrator {
 
 /// Helper function to validate timestep.
 pub fn validate_timestep(dt: Time) -> Result<()> {
-    use crate::error::GravwellError;
-
-    if !dt.is_finite() || dt.is_nan() || dt <= 0.0 {
-        Err(GravwellError::InvalidTimestep { timestep: dt })
-    } else {
-        Ok(())
-    }
+    Validator::validate_timestep(dt)
 }
 
 /// Helper function to validate accelerations for numerical stability.
