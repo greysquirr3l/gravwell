@@ -120,7 +120,7 @@ fn test_simd_accuracy() -> Result<()> {
         let calc = VectorizedGravity::with_simd_level(*level);
         let mut forces = vec![Vector3::zeros(); 4];
         calc.calculate_forces(&particles, &mut forces)?;
-        all_forces.push(forces);
+        all_forces.push(forces.clone());
 
         println!(
             "  {} forces: [{:.3e}, {:.3e}, {:.3e}]",
@@ -135,7 +135,7 @@ fn test_simd_accuracy() -> Result<()> {
     let scalar_forces = &all_forces[0];
     let mut max_error: f64 = 0.0;
 
-    for (i, forces) in all_forces.iter().enumerate().skip(1) {
+    for (_i, forces) in all_forces.iter().enumerate().skip(1) {
         for j in 0..4 {
             let error = (forces[j] - scalar_forces[j]).norm() / scalar_forces[j].norm().max(1e-100);
             max_error = max_error.max(error);

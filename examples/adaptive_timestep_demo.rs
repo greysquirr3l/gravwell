@@ -81,7 +81,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 // Print warning for instability
                 if step_count % 1000 == 0 {
                     println!(
-                        "⚠️  Instability detected at t={:.3f}: error={:.3e}, recommended_dt={:.3e}",
+                        "⚠️  Instability detected at t={:.3}: error={:.3e}, recommended_dt={:.3e}",
                         current_time, analysis.current_error, analysis.recommended_timestep
                     );
                 }
@@ -97,7 +97,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         if step_count % 5000 == 0 {
             let progress = (current_time / total_time * 100.0).min(100.0);
             println!(
-                "📊 Progress: {:.1}% | Steps: {} | Time: {:.3f}s | dt: {:.3e}s | Energy: {:.6e}",
+                "📊 Progress: {:.1}% | Steps: {} | Time: {:.3}s | dt: {:.3e}s | Energy: {:.6e}",
                 progress,
                 step_count,
                 current_time,

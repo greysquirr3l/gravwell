@@ -9,8 +9,8 @@
 //! - Comprehensive optimization integration
 //! - Performance monitoring and reporting
 
-use gravwell::prelude::*;
 use gravwell::builder::Simulation;
+use gravwell::prelude::*;
 use std::collections::VecDeque;
 use std::time::{Duration, Instant};
 
@@ -82,7 +82,7 @@ impl PerformanceShowcase {
 
         Ok(Self {
             simulation,
-            config,
+            config: config.clone(),
             frame_times: VecDeque::with_capacity(300), // 5 seconds at 60 FPS
             fps_history: VecDeque::with_capacity(300),
             active_particle_budget: (config.particle_count as f64 * 0.4) as usize, // Start with 40%
@@ -302,7 +302,7 @@ impl PerformanceShowcase {
             .fps_history
             .iter()
             .fold(f64::INFINITY, |a, &b| a.min(b));
-        let max_fps = self.fps_history.iter().fold(0.0, |a, &b| a.max(b));
+        let max_fps = self.fps_history.iter().fold(0.0f64, |a, &b| a.max(b));
 
         let culling_efficiency =
             1.0 - (active_particles as f64 / self.config.particle_count as f64);
@@ -338,7 +338,7 @@ impl PerformanceShowcase {
             .fps_history
             .iter()
             .fold(f64::INFINITY, |a, &b| a.min(b));
-        let max_fps = self.fps_history.iter().fold(0.0, |a, &b| a.max(b));
+        let max_fps = self.fps_history.iter().fold(0.0f64, |a, &b| a.max(b));
 
         let fps_variance = if self.fps_history.len() > 1 {
             let mean = avg_fps;

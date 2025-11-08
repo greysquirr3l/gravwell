@@ -3,6 +3,8 @@
 //! Comprehensive performance validation suite for Gravwell's physics engine,
 //! testing scalability from small systems to massive N-body simulations.
 
+// Using std::result::Result to avoid conflict with gravwell::Result
+// use gravwell::error::Result;  // Not needed since we use std::result::Result
 use gravwell::prelude::*;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
@@ -30,7 +32,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         // Test each force algorithm
         for algorithm in &force_algorithms {
             let performance = run_scalability_test(particle_count, algorithm)?;
-            results.insert(format!("{}_{}", algorithm, particle_count), performance);
+            results.insert(format!("{}_{}", algorithm, particle_count), performance.clone());
 
             let fps_capable = if performance.avg_step_time.as_secs_f64() <= 0.01667 {
                 "✅"
@@ -249,7 +251,7 @@ struct MemoryUsage {
 fn run_scalability_test(
     particle_count: usize,
     algorithm: &str,
-) -> Result<PerformanceResult, Box<dyn std::error::Error>> {
+) -> std::result::Result<PerformanceResult, Box<dyn std::error::Error>> {
     // Create simulation based on algorithm
     let mut sim = match algorithm {
         "DirectGravity" => create_direct_simulation(particle_count)?,
@@ -292,7 +294,7 @@ fn run_scalability_test(
 fn run_integrator_test(
     particle_count: usize,
     integrator: &str,
-) -> Result<PerformanceResult, Box<dyn std::error::Error>> {
+) -> std::result::Result<PerformanceResult, Box<dyn std::error::Error>> {
     let mut sim = match integrator {
         "VelocityVerlet" => create_verlet_simulation(particle_count)?,
         "Leapfrog" => create_leapfrog_simulation(particle_count)?,
@@ -330,7 +332,7 @@ fn run_integrator_test(
     })
 }
 
-fn measure_memory_usage(particle_count: usize) -> Result<MemoryUsage, Box<dyn std::error::Error>> {
+fn measure_memory_usage(particle_count: usize) -> std::result::Result<MemoryUsage, Box<dyn std::error::Error>> {
     // This would use platform-specific memory profiling
     // For now, we'll estimate based on data structure sizes
 
@@ -348,13 +350,10 @@ fn measure_memory_usage(particle_count: usize) -> Result<MemoryUsage, Box<dyn st
 
 fn run_parallel_test(
     particle_count: usize,
-    thread_count: usize,
-) -> Result<PerformanceResult, Box<dyn std::error::Error>> {
-    // Set thread pool size
-    rayon::ThreadPoolBuilder::new()
-        .num_threads(thread_count)
-        .build_global()
-        .unwrap();
+    _thread_count: usize,
+) -> std::result::Result<PerformanceResult, Box<dyn std::error::Error>> {
+    // Note: Thread management handled by force calculator implementations
+    // Rayon-based parallelism would be internal to BarnesHut calculator
 
     let mut sim = create_barnes_hut_simulation(particle_count)?;
     add_random_particles(&mut sim, particle_count)?;
@@ -388,7 +387,7 @@ fn run_parallel_test(
 
 fn run_realtime_test(
     particle_count: usize,
-) -> Result<RealtimePerformance, Box<dyn std::error::Error>> {
+) -> std::result::Result<RealtimePerformance, Box<dyn std::error::Error>> {
     let mut sim = create_barnes_hut_simulation(particle_count)?;
     add_random_particles(&mut sim, particle_count)?;
 
@@ -413,7 +412,7 @@ fn run_realtime_test(
     let average_frame_time = Duration::from_nanos(
         (frame_times.iter().map(|d| d.as_nanos()).sum::<u128>() / frame_times.len() as u128) as u64,
     );
-    let minimum_frame_time = *frame_times.iter().min().unwrap();
+    let _minimum_frame_time = *frame_times.iter().min().unwrap();
 
     Ok(RealtimePerformance {
         average_fps: 1.0 / average_frame_time.as_secs_f64(),
@@ -425,7 +424,7 @@ fn run_realtime_test(
 fn run_accuracy_test(
     particle_count: usize,
     tolerance: f64,
-) -> Result<PerformanceResult, Box<dyn std::error::Error>> {
+) -> std::result::Result<PerformanceResult, Box<dyn std::error::Error>> {
     let mut sim = create_adaptive_simulation(particle_count, tolerance)?;
     add_random_particles(&mut sim, particle_count)?;
 
@@ -456,7 +455,7 @@ fn run_accuracy_test(
     })
 }
 
-fn test_platform_optimizations() -> Result<(), Box<dyn std::error::Error>> {
+fn test_platform_optimizations() -> std::result::Result<(), Box<dyn std::error::Error>> {
     println!("  CPU Features:");
 
     // Check for SIMD support
@@ -486,7 +485,7 @@ fn test_platform_optimizations() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn find_maximum_particles_for_60fps() -> Result<usize, Box<dyn std::error::Error>> {
+fn find_maximum_particles_for_60fps() -> std::result::Result<usize, Box<dyn std::error::Error>> {
     let target_frame_time = Duration::from_nanos(16_666_667); // 16.67ms for 60 FPS
     let mut low = 1000;
     let mut high = 100_000;
@@ -524,12 +523,12 @@ fn find_maximum_particles_for_60fps() -> Result<usize, Box<dyn std::error::Error
 
 fn generate_performance_report(
     results: &HashMap<String, PerformanceResult>,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> std::result::Result<(), Box<dyn std::error::Error>> {
     println!("Key Findings:");
     println!("------------");
 
     // Find best performing configurations
-    let mut best_small_system = None;
+    let mut best_small_system: Option<(String, PerformanceResult)> = None;
     let mut best_large_system = None;
 
     for (key, result) in results {
@@ -593,53 +592,53 @@ fn classify_stability(energy_drift: f64) -> String {
 // Placeholder simulation creation functions
 fn create_direct_simulation(
     _particles: usize,
-) -> Result<MockSimulation, Box<dyn std::error::Error>> {
+) -> std::result::Result<MockSimulation, Box<dyn std::error::Error>> {
     Ok(MockSimulation::new())
 }
 
 fn create_barnes_hut_simulation(
     _particles: usize,
-) -> Result<MockSimulation, Box<dyn std::error::Error>> {
+) -> std::result::Result<MockSimulation, Box<dyn std::error::Error>> {
     Ok(MockSimulation::new())
 }
 
-fn create_fmm_simulation(_particles: usize) -> Result<MockSimulation, Box<dyn std::error::Error>> {
+fn create_fmm_simulation(_particles: usize) -> std::result::Result<MockSimulation, Box<dyn std::error::Error>> {
     Ok(MockSimulation::new())
 }
 
 fn create_verlet_simulation(
     _particles: usize,
-) -> Result<MockSimulation, Box<dyn std::error::Error>> {
+) -> std::result::Result<MockSimulation, Box<dyn std::error::Error>> {
     Ok(MockSimulation::new())
 }
 
 fn create_leapfrog_simulation(
     _particles: usize,
-) -> Result<MockSimulation, Box<dyn std::error::Error>> {
+) -> std::result::Result<MockSimulation, Box<dyn std::error::Error>> {
     Ok(MockSimulation::new())
 }
 
-fn create_rk4_simulation(_particles: usize) -> Result<MockSimulation, Box<dyn std::error::Error>> {
+fn create_rk4_simulation(_particles: usize) -> std::result::Result<MockSimulation, Box<dyn std::error::Error>> {
     Ok(MockSimulation::new())
 }
 
 fn create_ias15_simulation(
     _particles: usize,
-) -> Result<MockSimulation, Box<dyn std::error::Error>> {
+) -> std::result::Result<MockSimulation, Box<dyn std::error::Error>> {
     Ok(MockSimulation::new())
 }
 
 fn create_adaptive_simulation(
     _particles: usize,
     _tolerance: f64,
-) -> Result<MockSimulation, Box<dyn std::error::Error>> {
+) -> std::result::Result<MockSimulation, Box<dyn std::error::Error>> {
     Ok(MockSimulation::new())
 }
 
 fn add_random_particles(
     _sim: &mut MockSimulation,
     _count: usize,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> std::result::Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
@@ -653,18 +652,18 @@ impl MockSimulation {
         Self { step_count: 0 }
     }
 
-    fn step(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    fn step(&mut self) -> std::result::Result<(), Box<dyn std::error::Error>> {
         self.step_count += 1;
         // Simulate some work
         std::thread::sleep(Duration::from_micros(100));
         Ok(())
     }
 
-    fn parallel_step(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    fn parallel_step(&mut self) -> std::result::Result<(), Box<dyn std::error::Error>> {
         self.step()
     }
 
-    fn adaptive_step(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    fn adaptive_step(&mut self) -> std::result::Result<(), Box<dyn std::error::Error>> {
         self.step()
     }
 

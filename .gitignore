@@ -259,9 +259,14 @@ docs/PROJECT_STATUS_REPORT.md
 docs/README_TEMPLATE.md
 docs/RUST_LIBRARY_BEST_PRACTICES.md
 docs/SIMD_IMPLEMENTATION_REPORT.md
+CRITICAL_ERROR_RESOLUTION_PLAN.md
 
 # Development files
 TODO.md
+TODO*.md
+
+# Terminal selection files
+terminal_selection
 
 # Large test datasets
 test_data/large/
