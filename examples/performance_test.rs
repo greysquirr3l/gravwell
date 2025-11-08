@@ -32,7 +32,10 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         // Test each force algorithm
         for algorithm in &force_algorithms {
             let performance = run_scalability_test(particle_count, algorithm)?;
-            results.insert(format!("{}_{}", algorithm, particle_count), performance.clone());
+            results.insert(
+                format!("{}_{}", algorithm, particle_count),
+                performance.clone(),
+            );
 
             let fps_capable = if performance.avg_step_time.as_secs_f64() <= 0.01667 {
                 "✅"
@@ -332,7 +335,9 @@ fn run_integrator_test(
     })
 }
 
-fn measure_memory_usage(particle_count: usize) -> std::result::Result<MemoryUsage, Box<dyn std::error::Error>> {
+fn measure_memory_usage(
+    particle_count: usize,
+) -> std::result::Result<MemoryUsage, Box<dyn std::error::Error>> {
     // This would use platform-specific memory profiling
     // For now, we'll estimate based on data structure sizes
 
@@ -602,7 +607,9 @@ fn create_barnes_hut_simulation(
     Ok(MockSimulation::new())
 }
 
-fn create_fmm_simulation(_particles: usize) -> std::result::Result<MockSimulation, Box<dyn std::error::Error>> {
+fn create_fmm_simulation(
+    _particles: usize,
+) -> std::result::Result<MockSimulation, Box<dyn std::error::Error>> {
     Ok(MockSimulation::new())
 }
 
@@ -618,7 +625,9 @@ fn create_leapfrog_simulation(
     Ok(MockSimulation::new())
 }
 
-fn create_rk4_simulation(_particles: usize) -> std::result::Result<MockSimulation, Box<dyn std::error::Error>> {
+fn create_rk4_simulation(
+    _particles: usize,
+) -> std::result::Result<MockSimulation, Box<dyn std::error::Error>> {
     Ok(MockSimulation::new())
 }
 
