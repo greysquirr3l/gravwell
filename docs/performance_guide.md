@@ -154,6 +154,7 @@ let sim = Simulation::builder()
 ```
 
 **Theta Parameter Tuning:**
+
 - θ = 0.3: High accuracy, slower (good for science mode)
 - θ = 0.5: Balanced accuracy/performance (recommended for games)  
 - θ = 0.7: Lower accuracy, fastest (suitable for distant objects)

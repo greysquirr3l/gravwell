@@ -6,7 +6,7 @@
 use gravwell::prelude::*;
 use std::time::Instant;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     println!("🌟 Gravwell Binary Orbit Simulation");
     println!("===================================");
 
@@ -39,16 +39,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
 
     // Create high-precision simulation
-    let mut sim = Simulation::builder()
-        .integrator(
+    let mut sim = SimulationBuilder::new()
+        .with_integrator(
             IAS15::new() // Adaptive 15th order integrator
                 .tolerance(1e-12) // Very high precision
                 .min_timestep(0.01 * DAYS_TO_SECONDS)
                 .max_timestep(0.1 * DAYS_TO_SECONDS),
         )
-        .forces(DirectGravity::new()) // Exact two-body calculation
-        .gravity_constant(GRAVITATIONAL_CONSTANT)
-        .energy_conservation_check(true) // Enable energy monitoring
+        .with_force_calculator(DirectGravity::new()) // Exact two-body calculation
         .build()?;
 
     // Calculate initial conditions for circular orbit at periapsis
@@ -130,9 +128,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // Tracking variables
-    let mut max_separation = 0.0;
+    let mut max_separation: f64 = 0.0;
     let mut min_separation = f64::INFINITY;
-    let mut max_velocity = 0.0;
+    let mut max_velocity: f64 = 0.0;
     let mut min_velocity = f64::INFINITY;
     let mut orbit_count = 0;
     let mut last_angle = 0.0;

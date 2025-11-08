@@ -16,6 +16,7 @@ optimizations that deliver real-world performance gains far exceeding theoretica
 ## Benchmark Environment
 
 **Hardware Configuration:**
+
 - **CPU**: Apple M3 Pro (11-core, 6 performance + 5 efficiency)
 - **RAM**: 18GB Unified Memory
 - **Architecture**: ARM64 (AArch64)
@@ -24,6 +25,7 @@ optimizations that deliver real-world performance gains far exceeding theoretica
 - **Compilation**: `--release` with native CPU optimizations
 
 **Software Configuration:**
+
 - **Criterion**: 0.5+ for statistical benchmarking
 - **Sample Size**: 100 iterations per benchmark
 - **Warmup**: 10 iterations before measurement
@@ -41,6 +43,7 @@ optimizations that deliver real-world performance gains far exceeding theoretica
 | **Vectorized Direct** | 87ns | 9.1µs | 623µs | 58.3ms |
 
 **Performance Analysis:**
+
 - **Direct Gravity**: O(N²) scaling confirmed, suitable for N < 1,000
 - **Barnes-Hut**: O(N log N) scaling achieved, 12-16x speedup at 10K particles
 - **SIMD Vectorization**: 2.6x speedup for direct calculations
@@ -57,6 +60,7 @@ optimizations that deliver real-world performance gains far exceeding theoretica
 | **IAS15** | 12,847 | 2.1e-15 (exceptional) | Adaptive |
 
 **Integration Analysis:**
+
 - **Velocity Verlet**: Best balance of speed and accuracy for most applications
 - **IAS15**: Exceptional accuracy for scientific computing, 15th-order precision
 - **Energy Conservation**: Critical metric for long-term simulation stability
@@ -75,6 +79,7 @@ optimizations that deliver real-world performance gains far exceeding theoretica
 | **Scalar Fallback** | None | 1.0x | 1.66ms (baseline) |
 
 **SIMD Analysis:**
+
 - **Runtime Detection**: Automatic CPU feature detection and optimal path selection
 - **Cross-Platform**: Native performance on ARM and x86 architectures
 - **Scaling**: Up to 8x theoretical speedup with AVX-512 on high-end Intel CPUs
@@ -109,6 +114,7 @@ Memory bound operations show less SIMD benefit due to cache limitations.
 | **100K Particles** | 234ms | 156ms | 1.5x | 0 allocations |
 
 **Memory Pool Analysis:**
+
 - **Zero Allocations**: Complete elimination of runtime memory allocation
 - **Thread-Safe**: Concurrent access with minimal contention
 - **RAII Management**: Automatic buffer cleanup and pool return
@@ -147,6 +153,7 @@ Total Memory Overhead:  12.5% (acceptable for zero-allocation guarantee)
 | **50,000** | <1 FPS | 38 FPS | >38x | Noticeable |
 
 **LOD Analysis:**
+
 - **Distance Thresholds**: 500m, 1.5km, 5km, 15km for detail levels
 - **Update Frequency**: LOD recalculation every 60 frames (1 second)
 - **Hysteresis**: 15% threshold prevents flickering between detail levels
@@ -180,6 +187,7 @@ Quality Assessment:       Visually acceptable for most scenarios
 | **200.0** | 16.2 | 134ns | 450KB | 71% |
 
 **Hash Grid Analysis:**
+
 - **Optimal Cell Size**: 50.0 units for typical particle distributions
 - **O(1) Performance**: Confirmed constant-time insertion and lookup
 - **Memory Efficiency**: <1% overhead for spatial indexing
@@ -195,6 +203,7 @@ Quality Assessment:       Visually acceptable for most scenarios
 | **Ultra-Wide (120°)** | 67.3% | 32.7% | 78.9% |
 
 **Frustum Culling Analysis:**
+
 - **Plane Intersection**: 6-plane mathematical precision
 - **Sphere Testing**: ~10ns per particle intersection test
 - **Temporal Coherence**: 85-95% particles maintain visibility state
@@ -243,6 +252,7 @@ Performance Multiplier: 200x vs naive O(N²) approach
 | **100,000** | <1 FPS | 1 FPS | 30 FPS | >30x |
 
 **Optimization Breakdown:**
+
 - **Basic**: Barnes-Hut + SIMD + Memory Pools
 - **Full**: Basic + LOD + Spatial Culling
 - **Target Achievement**: 60 FPS maintained up to 25,000 particles
@@ -343,6 +353,7 @@ Spatial Culling Efficiency:       > 70%
 ### Performance History Tracking
 
 Recent performance improvements:
+
 - **v0.1.0**: Baseline implementation
 - **v0.1.1**: +15% from SIMD vectorization
 - **v0.1.2**: +23% from memory pool optimization
@@ -394,16 +405,19 @@ SimulationBuilder::new()
 ### Hardware-Specific Optimizations
 
 **Apple Silicon (M1/M2/M3):**
+
 - NEON SIMD provides 2.6x speedup
 - Unified memory benefits large particle sets
 - Efficiency cores handle background spatial updates
 
 **Intel x86_64:**
+
 - AVX-512 can provide up to 8x speedup
 - Large L3 cache benefits Barnes-Hut tree traversal
 - Hyperthreading improves parallel force calculations
 
 **AMD x86_64:**
+
 - AVX2 provides 4x speedup
 - Large L2 cache per core benefits spatial operations
 - High core counts excel at parallel processing

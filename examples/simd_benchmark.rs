@@ -133,7 +133,7 @@ fn test_simd_accuracy() -> Result<()> {
 
     // Compare against scalar reference
     let scalar_forces = &all_forces[0];
-    let mut max_error = 0.0;
+    let mut max_error: f64 = 0.0;
 
     for (i, forces) in all_forces.iter().enumerate().skip(1) {
         for j in 0..4 {

@@ -26,6 +26,12 @@ impl BodyHandle {
     pub fn index(&self) -> usize {
         self.index
     }
+
+    /// Create an invalid handle for placeholder use.
+    /// This should be replaced with actual handles when bodies are added.
+    pub fn invalid() -> Self {
+        Self { index: usize::MAX }
+    }
 }
 
 /// Builder pattern for creating configured simulations.
@@ -94,14 +100,11 @@ impl<I, F> SimulationBuilder<I, F> {
             .force_calculator
             .ok_or_else(|| GravwellError::configuration("No force calculator specified"))?;
 
-        if self.particles.is_empty() {
-            return Err(GravwellError::configuration(
-                "No particles added to simulation",
-            ));
+        // Allow empty simulations - particles can be added later
+        if !self.particles.is_empty() {
+            self.particles.validate()?;
+            force_calculator.validate(&self.particles)?;
         }
-
-        self.particles.validate()?;
-        force_calculator.validate(&self.particles)?;
 
         Ok(Simulation {
             integrator,

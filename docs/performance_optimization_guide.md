@@ -18,6 +18,7 @@ Particles    | Time per Step | Throughput (particles/ms)
 ```
 
 **Scaling Analysis**: Perfect O(N²) scaling confirmed
+
 - 10x particles → ~139x time increase (expected: 100x)
 - Slight overhead due to memory access patterns at larger scales
 
@@ -32,6 +33,7 @@ Particles    | Time per Step | Steps per Second
 ```
 
 **Performance Characteristics**:
+
 - Excellent cache efficiency with Structure-of-Arrays layout
 - Linear O(N) scaling for integration step
 - Symplectic properties maintained at high performance
@@ -128,6 +130,7 @@ Based on accuracy vs performance trade-offs:
 ```
 
 **Performance Impact**:
+
 - θ = 0.8: ~2-3x faster than θ = 0.3
 - θ = 0.5: ~1.5x faster than θ = 0.3
 - θ = 0.3: Highest accuracy, reference performance
@@ -173,6 +176,7 @@ let sim = builder.build()?;
 #### Structure-of-Arrays Benefit Analysis
 
 Current SoA layout provides:
+
 - **Cache efficiency**: Contiguous memory access for SIMD operations
 - **Memory locality**: Related data stored together
 - **Performance**: ~15-25% improvement over AoS for large systems
@@ -205,6 +209,7 @@ impl LODManager {
 ```
 
 **LOD Performance Targets**:
+
 - **Close objects** (< 1000 units): Full physics every frame
 - **Medium objects** (1000-5000 units): Physics every 2-3 frames  
 - **Distant objects** (> 5000 units): Physics every 10+ frames
@@ -235,6 +240,7 @@ impl SpatialCuller {
 #### SIMD Acceleration (Future Enhancement)
 
 Target performance improvements:
+
 - **AVX-512**: 8x f64 operations → theoretical 8x speedup
 - **AVX2**: 4x f64 operations → theoretical 4x speedup  
 - **NEON (ARM64)**: 2x f64 operations → theoretical 2x speedup
@@ -244,6 +250,7 @@ Current implementation ready for SIMD integration in force calculations.
 #### GPU Compute Acceleration (Future Enhancement)
 
 Estimated performance targets for GPU implementation:
+
 - **Small systems** (< 1000): GPU overhead not beneficial
 - **Medium systems** (1000-10000): 5-10x potential speedup
 - **Large systems** (10000+): 50-100x potential speedup
@@ -251,6 +258,7 @@ Estimated performance targets for GPU implementation:
 #### Parallel Processing Integration
 
 Current architecture supports parallel processing via:
+
 - **Rayon integration**: Work-stealing parallelism for force calculations
 - **Multi-threaded BarnesHut**: Tree construction and traversal parallelization
 - **SIMD + Parallel**: Combined vectorization and multi-threading

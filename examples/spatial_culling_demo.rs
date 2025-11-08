@@ -86,6 +86,7 @@ fn run_performance_demo() -> std::result::Result<(), Box<dyn std::error::Error>>
             mass: 1e15,
             position,
             velocity,
+            radius: 1.0, // Default radius
         };
 
         simulation.add_body(body)?;

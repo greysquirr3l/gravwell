@@ -15,6 +15,7 @@ The spatial hash grid provides O(1) particle insertion and neighbor queries, rep
 O(N) brute-force proximity testing.
 
 **Key Features:**
+
 - **O(1) Performance**: Constant-time insertion and neighbor lookup
 - **Configurable Cell Size**: Adaptive sizing based on particle distribution
 - **Hash Collision Handling**: Efficient chaining for overlapping cells
@@ -38,6 +39,7 @@ let neighbors = grid.find_neighbors(center_position, search_radius);
 ```
 
 **Performance Characteristics:**
+
 - **Insertion Time**: O(1) average, O(n) worst case with hash collisions
 - **Query Time**: O(1) for cell lookup + O(k) for neighbors in cell
 - **Memory Usage**: ~8 bytes per particle + hash table overhead
@@ -48,6 +50,7 @@ let neighbors = grid.find_neighbors(center_position, search_radius);
 Mathematical camera frustum culling removes off-screen particles from physics calculations.
 
 **Key Features:**
+
 - **6-Plane Intersection**: Mathematical plane equations for precise culling
 - **Sphere/AABB Testing**: Multiple intersection test algorithms
 - **Temporal Coherence**: Optimization for frame-to-frame consistency
@@ -79,6 +82,7 @@ let visible_particles = frustum.cull_spheres(&particle_positions, &particle_radi
 ```
 
 **Performance Impact:**
+
 - **Culling Efficiency**: 50-90% particle reduction in typical view scenarios
 - **Frame Coherence**: 90%+ particles maintain visibility state between frames
 - **Computation Cost**: ~10ns per particle for sphere intersection test
@@ -88,6 +92,7 @@ let visible_particles = frustum.cull_spheres(&particle_positions, &particle_radi
 Importance-based particle activation/deactivation with performance budget management.
 
 **Key Features:**
+
 - **Importance Metrics**: Distance, velocity, mass-based weighting
 - **Budget Management**: Strict active particle limits for performance guarantees
 - **Smooth Transitions**: Hysteresis and gradual state changes
@@ -120,6 +125,7 @@ let active_particles = activation_manager.get_active_particles();
 ```
 
 **Budget Management:**
+
 - **Hard Limits**: Never exceed specified active particle count
 - **Importance Ranking**: Automatic selection of most important particles
 - **Smooth Transitions**: Gradual activation/deactivation to prevent flickering
@@ -185,6 +191,7 @@ spatial_culler.apply_optimization(optimization);
 ```
 
 **Cell Size Guidelines:**
+
 - **Too Small**: Many cells, frequent cell transitions, poor cache locality
 - **Too Large**: Many particles per cell, reduced culling effectiveness
 - **Optimal Range**: 1.5-2.0x average inter-particle distance

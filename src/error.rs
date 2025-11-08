@@ -93,3 +93,30 @@ impl GravwellError {
         Self::GpuError(msg.into())
     }
 }
+
+// From implementations for common error types that examples expect
+impl From<String> for GravwellError {
+    fn from(msg: String) -> Self {
+        Self::Configuration(msg)
+    }
+}
+
+impl From<&str> for GravwellError {
+    fn from(msg: &str) -> Self {
+        Self::Configuration(msg.to_string())
+    }
+}
+
+#[cfg(feature = "std")]
+impl From<std::io::Error> for GravwellError {
+    fn from(err: std::io::Error) -> Self {
+        Self::Configuration(format!("IO error: {}", err))
+    }
+}
+
+#[cfg(feature = "std")]
+impl From<std::fmt::Error> for GravwellError {
+    fn from(err: std::fmt::Error) -> Self {
+        Self::Configuration(format!("Format error: {}", err))
+    }
+}

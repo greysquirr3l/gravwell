@@ -2,7 +2,10 @@
 
 ## Overview
 
-Gravwell now includes comprehensive GPU acceleration using WebGPU compute shaders, providing massive performance improvements for large-scale gravity simulations. The implementation delivers 11-1,276x speedups while maintaining full scientific accuracy and cross-platform compatibility.
+Gravwell now includes comprehensive GPU acceleration using WebGPU compute
+shaders, providing massive performance improvements for large-scale gravity
+simulations. The implementation delivers 11-1,276x speedups while maintaining
+full scientific accuracy and cross-platform compatibility.
 
 ## Performance Results
 
@@ -165,6 +168,7 @@ cargo run --example gpu_demo_simple --features gpu
 ### Dependencies
 
 The GPU feature automatically includes:
+
 - `wgpu 0.19`: WebGPU implementation
 - `pollster 0.3`: Async runtime for blocking on GPU operations
 - `bytemuck 1.14`: Safe memory casting for GPU data
@@ -239,4 +243,6 @@ println!("Parallel Support: {}", gpu_calc.supports_parallel());
 - **Metal Performance Shaders**: Native iOS/macOS optimization
 - **WASM SIMD**: Enhanced WebAssembly performance
 
-The GPU acceleration implementation represents a major advancement in Gravwell's performance capabilities, enabling real-time simulation of large-scale gravitational systems while maintaining the library's commitment to scientific accuracy and cross-platform compatibility.
+The GPU acceleration implementation represents a major advancement in
+Gravwell's performance capabilities, enabling real-time simulation of large-scale gravitational systems while maintaining the library's commitment
+to scientific accuracy and cross-platform compatibility.

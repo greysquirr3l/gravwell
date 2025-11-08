@@ -687,6 +687,7 @@ These examples demonstrate the power of combining Gravwell's optimization system
 3. **Game Engine Integration**: Shows proper separation of physics and rendering with interpolation
 
 Key benefits achieved:
+
 - **100,000+ particle capability** with real-time performance
 - **Automatic quality adaptation** to maintain target frame rates
 - **Memory efficiency** through pool allocation

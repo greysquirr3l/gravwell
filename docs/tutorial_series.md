@@ -288,11 +288,13 @@ let integrator = SemiImplicitEuler::new();
 ```
 
 **Best for:**
+
 - Real-time games (60+ FPS)
 - Interactive simulations
 - Large timesteps without instability
 
 **Characteristics:**
+
 - Fast: ~50ns per particle per step
 - Stable: Handles large timesteps well
 - Energy drift: Moderate, acceptable for games
@@ -304,11 +306,13 @@ let integrator = VelocityVerlet::new();
 ```
 
 **Best for:**
+
 - Balanced accuracy/performance
 - General-purpose simulations
 - Educational demonstrations
 
 **Characteristics:**
+
 - Performance: ~80ns per particle per step
 - Accuracy: Second-order, good energy conservation
 - Stability: Symplectic, time-reversible
@@ -320,11 +324,13 @@ let integrator = Leapfrog::new();
 ```
 
 **Best for:**
+
 - Scientific simulations
 - Long-term orbital evolution
 - Maximum energy conservation
 
 **Characteristics:**
+
 - Performance: ~75ns per particle per step
 - Accuracy: Excellent energy conservation
 - Stability: Symplectic, ideal for Hamiltonian systems
@@ -336,11 +342,13 @@ let integrator = RK4::new();
 ```
 
 **Best for:**
+
 - High-precision requirements
 - Short-term accurate integration
 - Non-Hamiltonian systems
 
 **Characteristics:**
+
 - Performance: ~200ns per particle per step
 - Accuracy: Fourth-order truncation error
 - Stability: Not symplectic, energy drift over time

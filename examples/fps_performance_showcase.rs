@@ -10,6 +10,7 @@
 //! - Performance monitoring and reporting
 
 use gravwell::prelude::*;
+use gravwell::builder::Simulation;
 use std::collections::VecDeque;
 use std::time::{Duration, Instant};
 
@@ -123,6 +124,7 @@ impl PerformanceShowcase {
                 mass,
                 position,
                 velocity,
+                radius: 1.0, // Default radius
             };
 
             self.simulation.add_body(body)?;
@@ -142,7 +144,7 @@ impl PerformanceShowcase {
 
         let start_time = Instant::now();
         let mut last_report = start_time;
-        let mut camera_angle = 0.0;
+        let mut camera_angle: f64 = 0.0;
 
         while start_time.elapsed() < self.config.showcase_duration {
             let frame_start = Instant::now();
@@ -191,7 +193,7 @@ impl PerformanceShowcase {
     }
 
     /// Simulate spatial optimization effects
-    fn simulate_spatial_optimization(&self, camera_position: Vector3) -> usize {
+    fn simulate_spatial_optimization(&self, _camera_position: Vector3) -> usize {
         // Simulate the effects of spatial culling, LOD, and frustum culling
         let base_particles = self.config.particle_count;
 

@@ -3,10 +3,11 @@
 //! Demonstrates the advanced timestep control system with error estimation
 //! and automatic stability detection.
 
+use gravwell::error::Error;
 use gravwell::prelude::*;
 use std::time::Instant;
 
-fn main() -> Result<(), GravwellError> {
+fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     println!("🚀 Gravwell - Advanced Timestep Control Demo");
     println!("==============================================");
 
@@ -111,9 +112,9 @@ fn main() -> Result<(), GravwellError> {
     // Final results
     println!("\n🎯 Simulation Complete!");
     println!("========================");
-    println!("Total simulation time: {:.3f} s", current_time);
-    println!("Total steps taken: {}", step_count);
-    println!("Wall clock time: {:.3f} s", elapsed_time.as_secs_f64());
+    println!("Total simulation time: {:.3e} s", current_time);
+    println!("Steps taken: {}", step_count);
+    println!("Wall clock time: {:.3e} s", elapsed_time.as_secs_f64());
     println!(
         "Average steps per second: {:.0}",
         step_count as f64 / elapsed_time.as_secs_f64()

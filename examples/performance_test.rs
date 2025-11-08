@@ -7,7 +7,7 @@ use gravwell::prelude::*;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     println!("⚡ Gravwell Performance Test Suite");
     println!("=================================");
     println!("Target: 60 FPS capability for real-time applications");

@@ -29,6 +29,7 @@ pub struct Simulation<I: Integrator, F: ForceCalculator> {
 ```
 
 **Performance Characteristics:**
+
 - Memory: O(N) where N is particle count
 - Physics step: O(complexity of F)
 - State access: O(1)
@@ -46,6 +47,7 @@ sim.step(0.016)?; // 60 FPS timestep
 **Performance:** Depends on integrator and force calculator complexity
 **Thread Safety:** Not thread-safe (use separate instances)
 **Error Conditions:**
+
 - Numerical instability (NaN/infinity)
 - Invalid timestep (≤ 0 or too large)
 
@@ -117,6 +119,7 @@ pub struct BodyHandle {
 ```
 
 **Features:**
+
 - Generation counter prevents use-after-free
 - Implements `Copy` for efficient passing
 - Invalid handles return errors gracefully
@@ -151,6 +154,7 @@ let sim = SimulationBuilder::new()
 Sets the numerical integrator.
 
 **Available Integrators:**
+
 - `SemiImplicitEuler`: Fast, stable for games
 - `VelocityVerlet`: Balanced accuracy/performance
 - `Leapfrog`: Symplectic, energy-conserving
@@ -162,6 +166,7 @@ Sets the numerical integrator.
 Sets the force calculation method.
 
 **Available Calculators:**
+
 - `DirectGravity`: O(N²), exact forces
 - `BarnesHut`: O(N log N), configurable accuracy
 - `FastMultipole`: O(N), high particle counts
@@ -265,6 +270,7 @@ let forces = DirectGravity::new()
 **Recommended:** N < 10,000 particles
 
 **Performance Scaling:**
+
 - 1,000 particles: ~0.5ms per step
 - 5,000 particles: ~12ms per step  
 - 10,000 particles: ~50ms per step
@@ -287,11 +293,13 @@ let forces = BarnesHut::new()
 **Recommended:** N = 1,000 - 100,000 particles
 
 **Theta Parameter Effects:**
+
 - θ = 0.3: High accuracy, slower
 - θ = 0.5: Balanced (recommended)
 - θ = 0.7: Lower accuracy, faster
 
 **Performance Scaling:**
+
 - 10,000 particles: ~5ms per step (θ=0.5)
 - 50,000 particles: ~30ms per step
 - 100,000 particles: ~70ms per step
@@ -334,6 +342,7 @@ let neighbors = grid.find_neighbors(position, 100.0);
 ```
 
 **Performance:**
+
 - Insertion: O(1) average, O(N) worst case
 - Query: O(1) average for sparse grids
 - Memory: O(N + C) where C is cell count
@@ -369,6 +378,7 @@ let intersects = frustum.intersects_sphere(position, radius);
 ```
 
 **Performance:**
+
 - Point test: ~10ns per particle
 - Sphere test: ~20ns per particle
 - Typical culling: 50-80% particles removed
@@ -394,6 +404,7 @@ manager.update_activation(
 ```
 
 **Budget Management:**
+
 - Guarantees maximum active particle count
 - Importance-based prioritization
 - Smooth transitions with hysteresis
@@ -419,11 +430,13 @@ pool.return_vector_array(temp_forces);
 ```
 
 **Benefits:**
+
 - Eliminates allocation overhead in physics loop
 - Reduces garbage collection pressure
 - Improves cache locality
 
 **Performance Impact:**
+
 - 10-30% speedup in force calculations
 - Reduced memory fragmentation
 - Consistent frame times
@@ -443,6 +456,7 @@ struct ParticleSet {
 ```
 
 **SIMD Benefits:**
+
 - 2-4x speedup on modern CPUs
 - Automatic vectorization by compiler
 - Optimal memory bandwidth usage
@@ -620,6 +634,7 @@ let sim = SimulationBuilder::new()
 ```
 
 **Performance:**
+
 - 10-100x speedup for large systems (>10k particles)
 - Requires GPU with compute shader support
 - Automatic fallback to CPU if GPU unavailable
@@ -642,6 +657,7 @@ assert_eq!(sim.total_energy(), restored_sim.total_energy());
 ```
 
 **Features:**
+
 - Binary format for efficiency
 - Cross-platform compatibility
 - Deterministic restoration

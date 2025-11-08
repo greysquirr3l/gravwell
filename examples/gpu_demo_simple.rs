@@ -1,4 +1,5 @@
-use gravwell::forces::GpuDirectGravity;
+// Note: GPU features require 'gpu' feature to be enabled
+// use gravwell::forces::GpuDirectGravity; // Not available without 'gpu' feature
 use gravwell::prelude::*;
 use std::time::Instant;
 
