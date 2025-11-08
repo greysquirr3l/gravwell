@@ -264,6 +264,10 @@ CRITICAL_ERROR_RESOLUTION_PLAN.md
 # Development files
 TODO.md
 TODO*.md
+*VALIDATION*.md
+*PLAN*.md
+*SUMMARY*.md
+QUICK_START_GUIDE.md
 
 # Terminal selection files
 terminal_selection
