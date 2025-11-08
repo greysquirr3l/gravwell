@@ -73,9 +73,12 @@ pub struct GpuBarnesHut {
 impl GpuBarnesHut {
     /// Create a new GPU Barnes-Hut force calculator
     pub fn new() -> Self {
+        // Create a simple device/queue pair without async complications for now
+        let (device, queue) = pollster::block_on(Self::create_device_and_queue());
+
         Self {
-            device: Arc::new(pollster::block_on(Self::create_device())),
-            queue: Arc::new(pollster::block_on(Self::create_queue())),
+            device: Arc::new(device),
+            queue: Arc::new(queue),
             theta: 0.5,
             max_depth: 20,
             min_particles_per_node: 8,
@@ -140,7 +143,7 @@ impl GpuBarnesHut {
         Ok(())
     }
 
-    async fn create_device() -> Device {
+    async fn create_device_and_queue() -> (Device, Queue) {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
             ..Default::default()
@@ -155,7 +158,7 @@ impl GpuBarnesHut {
             .await
             .expect("Failed to find an appropriate adapter");
 
-        let (device, _queue) = adapter
+        let (device, queue) = adapter
             .request_device(
                 &wgpu::DeviceDescriptor {
                     label: Some("GPU Barnes-Hut Physics Device"),
@@ -168,38 +171,7 @@ impl GpuBarnesHut {
             .await
             .expect("Failed to create device");
 
-        device
-    }
-
-    async fn create_queue() -> Queue {
-        let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
-            backends: wgpu::Backends::all(),
-            ..Default::default()
-        });
-
-        let adapter = instance
-            .request_adapter(&wgpu::RequestAdapterOptions {
-                power_preference: wgpu::PowerPreference::HighPerformance,
-                force_fallback_adapter: false,
-                compatible_surface: None,
-            })
-            .await
-            .expect("Failed to find an appropriate adapter");
-
-        let (_device, queue) = adapter
-            .request_device(
-                &wgpu::DeviceDescriptor {
-                    label: Some("GPU Barnes-Hut Device"),
-                    required_features: wgpu::Features::empty(),
-                    required_limits: wgpu::Limits::default(),
-                    // memory_hints: wgpu::MemoryHints::Performance,
-                },
-                None,
-            )
-            .await
-            .expect("Failed to create device");
-
-        queue
+        (device, queue)
     }
 
     async fn create_compute_pipeline(&self) -> Result<ComputePipeline, GravwellError> {
@@ -273,19 +245,85 @@ impl ForceCalculator for GpuBarnesHut {
         forces: &mut [Force],
     ) -> Result<(), GravwellError> {
         // Extract positions and masses from ParticleSet
-        let mut positions = Vec::with_capacity(particles.len());
-        let mut masses = Vec::with_capacity(particles.len());
+        let positions: Vec<Vector3> = (0..particles.len())
+            .map(|i| particles.position(i).clone())
+            .collect();
 
-        for i in 0..particles.len() {
-            positions.push(particles.position(i));
-            masses.push(particles.mass(i));
+        let masses: Vec<Mass> = (0..particles.len())
+            .map(|i| particles.mass(i).clone())
+            .collect();
+
+        // Block on async GPU computation
+        pollster::block_on(self.calculate_forces_async(&positions, &masses, forces))
+    }
+
+    fn name(&self) -> &'static str {
+        "GPU Barnes-Hut"
+    }
+
+    fn complexity(&self) -> &'static str {
+        "O(N log N)"
+    }
+
+    fn supports_parallel(&self) -> bool {
+        true // GPU inherently parallel
+    }
+}
+
+impl GpuBarnesHut {
+    /// Async GPU force calculation implementation
+    async fn calculate_forces_async(
+        &self,
+        positions: &[Vector3],
+        masses: &[Mass],
+        forces: &mut [Force],
+    ) -> Result<(), GravwellError> {
+        let particle_count = positions.len();
+
+        // Small systems: fall back to direct calculation
+        if particle_count < 1000 {
+            return self.calculate_forces_direct(positions, masses, forces);
         }
 
+        // Initialize GPU resources
+        let mut gpu_barnes_hut = GpuBarnesHut::new();
+        gpu_barnes_hut
+            .initialize_gpu_resources(particle_count)
+            .await?;
+
+        // Build octree
+        if let Some(ref mut octree) = gpu_barnes_hut.octree {
+            octree.build_tree(positions, masses).await?;
+        }
+
+        // Calculate forces using GPU tree traversal
+        let mut traversal = TreeTraversal::new();
+        traversal
+            .calculate_forces_gpu(
+                &self.device,
+                &self.queue,
+                self.compute_pipeline.as_ref().unwrap(),
+                positions,
+                masses,
+                forces,
+                self.theta,
+            )
+            .await?;
+
+        Ok(())
+    }
+
+    /// Direct force calculation for small systems
+    fn calculate_forces_direct(
+        &self,
+        positions: &[Vector3],
+        masses: &[Mass],
+        forces: &mut [Force],
+    ) -> Result<(), GravwellError> {
         // Convert forces to Vector3 for internal computation
         let mut force_vectors = vec![Vector3::zeros(); forces.len()];
 
-        // For now, implement a simple direct gravity calculation as placeholder
-        // TODO: Replace with actual GPU Barnes-Hut implementation
+        // Direct gravity calculation with softening
         for i in 0..positions.len() {
             let mut force = Vector3::zeros();
 
@@ -298,7 +336,7 @@ impl ForceCalculator for GpuBarnesHut {
                 let r_squared = r_vec.norm_squared() + 1e-12; // Small softening to avoid singularities
                 let r = r_squared.sqrt();
 
-                if r > 0.0 {
+                if r > 1e-12 {
                     let force_magnitude =
                         crate::utils::constants::G * masses[i] * masses[j] / r_squared;
                     force += force_magnitude * r_vec / r;
@@ -315,18 +353,6 @@ impl ForceCalculator for GpuBarnesHut {
 
         Ok(())
     }
-
-    fn name(&self) -> &'static str {
-        "GPU Barnes-Hut"
-    }
-
-    fn complexity(&self) -> &'static str {
-        "O(N log N)"
-    }
-
-    fn supports_parallel(&self) -> bool {
-        true // GPU inherently parallel
-    }
 }
 
 impl Default for GpuBarnesHut {
@@ -338,7 +364,7 @@ impl Default for GpuBarnesHut {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Mass;
+    use crate::Mass;
 
     #[test]
     fn test_gpu_barnes_hut_creation() {
@@ -352,26 +378,23 @@ mod tests {
         assert_eq!(barnes_hut.min_particles_per_node, 8);
     }
 
-    #[tokio::test]
+    #[test]
     async fn test_gpu_barnes_hut_small_system() {
-        let mut barnes_hut = GpuBarnesHut::new();
+        let barnes_hut = GpuBarnesHut::new();
 
-        let positions = vec![
-            Vector3::new(0.0, 0.0, 0.0),
-            Vector3::new(1.0, 0.0, 0.0),
-            Vector3::new(0.0, 1.0, 0.0),
-        ];
-
-        let masses = vec![
-            Mass::new(1.0).unwrap(),
-            Mass::new(1.0).unwrap(),
-            Mass::new(1.0).unwrap(),
-        ];
+        // Create a simple test particle set
+        let mut particle_set = ParticleSet::new();
+        let handle1 =
+            particle_set.add_body(Vector3::new(0.0, 0.0, 0.0), Vector3::zeros(), 1.0, 0.1);
+        let handle2 =
+            particle_set.add_body(Vector3::new(1.0, 0.0, 0.0), Vector3::zeros(), 1.0, 0.1);
+        let handle3 =
+            particle_set.add_body(Vector3::new(0.0, 1.0, 0.0), Vector3::zeros(), 1.0, 0.1);
 
         let mut forces = vec![Vector3::zeros(); 3];
 
         // Should handle small systems gracefully
-        let result = barnes_hut.calculate_forces(&positions, &masses, &mut forces);
+        let result = barnes_hut.calculate_forces(&particle_set, &mut forces);
         assert!(result.is_ok());
     }
 }

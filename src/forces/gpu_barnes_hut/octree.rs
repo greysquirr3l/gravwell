@@ -44,6 +44,18 @@ pub struct BoundingBox {
     pub max: Vector3,
 }
 
+/// Bounding box uniform for WGSL shaders
+#[repr(C)]
+#[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
+struct BoundsUniform {
+    min_x: f32,
+    min_y: f32,
+    min_z: f32,
+    max_x: f32,
+    max_y: f32,
+    max_z: f32,
+}
+
 /// Octree node representation for GPU
 #[repr(C)]
 #[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
@@ -65,6 +77,31 @@ pub struct GpuOctreeNode {
     pub first_child_index: u32, // Index of first child (if internal)
     pub particle_start: u32,    // Start index in particle array (if leaf)
     pub particle_count: u32,    // Number of particles (if leaf)
+}
+
+/// Parameters for radix sort passes
+#[repr(C)]
+#[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
+struct RadixPassParams {
+    num_elements: u32,
+    bit_shift: u32,
+    num_workgroups: u32,
+    _padding: u32,
+}
+
+/// Parameters for tree building
+#[repr(C)]
+#[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
+struct TreeBuildParams {
+    num_particles: u32,
+    max_depth: u32,
+    min_particles_per_node: u32,
+    root_min_x: f32,
+    root_min_y: f32,
+    root_min_z: f32,
+    root_max_x: f32,
+    root_max_y: f32,
+    root_max_z: f32,
 }
 
 impl GpuOctree {
@@ -162,7 +199,7 @@ impl GpuOctree {
     }
 
     async fn create_buffers(&mut self, particle_count: usize) -> Result<(), GravwellError> {
-        let morton_size = particle_count * std::mem::size_of::<u64>();
+        let morton_size = particle_count * std::mem::size_of::<u32>();
         let indices_size = particle_count * std::mem::size_of::<u32>();
         let nodes_size = particle_count * 8 * std::mem::size_of::<GpuOctreeNode>(); // Estimate
 
@@ -265,6 +302,24 @@ impl GpuOctree {
                 usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
             });
 
+        // Create bounding box uniform buffer
+        let bounds_data = BoundsUniform {
+            min_x: self.root_bounds.min.x as f32,
+            min_y: self.root_bounds.min.y as f32,
+            min_z: self.root_bounds.min.z as f32,
+            max_x: self.root_bounds.max.x as f32,
+            max_y: self.root_bounds.max.y as f32,
+            max_z: self.root_bounds.max.z as f32,
+        };
+
+        let bounds_buffer = self
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Bounding Box Uniform"),
+                contents: bytemuck::cast_slice(&[bounds_data]),
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            });
+
         // Create bind group
         let bind_group = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("Morton Code Bind Group"),
@@ -285,6 +340,10 @@ impl GpuOctree {
                         .as_ref()
                         .unwrap()
                         .as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: bounds_buffer.as_entire_binding(),
                 },
             ],
         });
@@ -327,18 +386,208 @@ impl GpuOctree {
             bytemuck::cast_slice(&indices),
         );
 
-        // Perform radix sort (simplified - would need multiple passes for full 64-bit sort)
-        let mut encoder = self
-            .device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("Sort Encoder"),
+        // Perform radix sort in multiple passes (64-bit Morton codes = 8 passes of 8 bits each)
+        let num_passes = 8; // 64 bits / 8 bits per pass
+        let mut input_keys = self.morton_codes_buffer.as_ref().unwrap();
+        let mut input_values = self.sorted_indices_buffer.as_ref().unwrap();
+        
+        // Create additional buffers for ping-pong sorting
+        let temp_keys_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Temp Morton Codes"),
+            size: (particle_count * std::mem::size_of::<u64>()) as u64,
+            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+
+        let temp_values_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Temp Indices"),
+            size: (particle_count * std::mem::size_of::<u32>()) as u64,
+            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+
+        let histogram_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Radix Histogram"),
+            size: (256 * 32 * std::mem::size_of::<u32>()) as u64, // 256 buckets * max workgroups
+            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+
+        for pass in 0..num_passes {
+            let bit_shift = pass * 8;
+            
+            // Determine output buffers (ping-pong)
+            let (output_keys, output_values) = if pass % 2 == 0 {
+                (&temp_keys_buffer, &temp_values_buffer)
+            } else {
+                (self.morton_codes_buffer.as_ref().unwrap(), self.sorted_indices_buffer.as_ref().unwrap())
+            };
+
+            // Create radix pass parameters
+            let pass_params = RadixPassParams {
+                num_elements: particle_count as u32,
+                bit_shift,
+                num_workgroups: ((particle_count + 255) / 256) as u32,
+                _padding: 0,
+            };
+
+            let params_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Radix Pass Parameters"),
+                contents: bytemuck::cast_slice(&[pass_params]),
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             });
 
-        // Note: Real implementation would need multiple passes for radix sort
-        // This is a simplified version for the basic structure
+            // Phase 1: Compute histograms
+            self.radix_compute_histogram(
+                input_keys,
+                input_values,
+                &histogram_buffer,
+                &params_buffer,
+                particle_count,
+            ).await?;
+
+            // Phase 2: Compute prefix sums
+            self.radix_compute_prefix_sums(&histogram_buffer, &params_buffer).await?;
+
+            // Phase 3: Scatter elements
+            self.radix_scatter_elements(
+                input_keys,
+                input_values,
+                output_keys,
+                output_values,
+                &histogram_buffer,
+                &params_buffer,
+                particle_count,
+            ).await?;
+
+            // Update pointers for next iteration
+            input_keys = output_keys;
+            input_values = output_values;
+        }
+
+        // Ensure final results are in the correct buffers
+        if num_passes % 2 == 1 {
+            // Copy from temp buffers back to main buffers
+            let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("Final Copy Encoder"),
+            });
+
+            encoder.copy_buffer_to_buffer(
+                &temp_keys_buffer,
+                0,
+                self.morton_codes_buffer.as_ref().unwrap(),
+                0,
+                (particle_count * std::mem::size_of::<u64>()) as u64,
+            );
+
+            encoder.copy_buffer_to_buffer(
+                &temp_values_buffer,
+                0,
+                self.sorted_indices_buffer.as_ref().unwrap(),
+                0,
+                (particle_count * std::mem::size_of::<u32>()) as u64,
+            );
+
+            self.queue.submit(std::iter::once(encoder.finish()));
+        }
+
+        Ok(())
+    }
+
+    /// Compute histogram phase of radix sort
+    async fn radix_compute_histogram(
+        &self,
+        input_keys: &Buffer,
+        input_values: &Buffer,
+        histogram_buffer: &Buffer,
+        params_buffer: &Buffer,
+        particle_count: usize,
+    ) -> Result<(), GravwellError> {
+        let bind_group = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("Radix Histogram Bind Group"),
+            layout: &self.sort_pipeline.as_ref().unwrap().get_bind_group_layout(0),
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: input_keys.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: input_values.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: wgpu::BindingResource::Buffer(wgpu::BufferBinding {
+                        buffer: histogram_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: wgpu::BindingResource::Buffer(wgpu::BufferBinding {
+                        buffer: histogram_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 4,
+                    resource: histogram_buffer.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 5,
+                    resource: params_buffer.as_entire_binding(),
+                },
+            ],
+        });
+
+        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: Some("Radix Histogram Encoder"),
+        });
+
+        {
+            let mut compute_pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
+                label: Some("Radix Histogram Pass"),
+                timestamp_writes: None,
+            });
+
+            compute_pass.set_pipeline(self.sort_pipeline.as_ref().unwrap());
+            compute_pass.set_bind_group(0, &bind_group, &[]);
+
+            let workgroup_size = 256;
+            let num_workgroups = (particle_count + workgroup_size - 1) / workgroup_size;
+            compute_pass.dispatch_workgroups(num_workgroups as u32, 1, 1);
+        }
 
         self.queue.submit(std::iter::once(encoder.finish()));
+        Ok(())
+    }
 
+    /// Compute prefix sums phase of radix sort
+    async fn radix_compute_prefix_sums(
+        &self,
+        histogram_buffer: &Buffer,
+        params_buffer: &Buffer,
+    ) -> Result<(), GravwellError> {
+        // Implementation would dispatch prefix sum compute shader
+        // For now, this is a placeholder
+        Ok(())
+    }
+
+    /// Scatter elements phase of radix sort
+    async fn radix_scatter_elements(
+        &self,
+        input_keys: &Buffer,
+        input_values: &Buffer,
+        output_keys: &Buffer,
+        output_values: &Buffer,
+        histogram_buffer: &Buffer,
+        params_buffer: &Buffer,
+        particle_count: usize,
+    ) -> Result<(), GravwellError> {
+        // Implementation would dispatch scatter compute shader
+        // For now, this is a placeholder
         Ok(())
     }
 
@@ -348,19 +597,138 @@ impl GpuOctree {
         positions: &[Vector3],
         masses: &[Mass],
     ) -> Result<(), GravwellError> {
-        // This would implement hierarchical tree construction
-        // Starting from root and recursively subdividing based on Morton codes
+        let particle_count = positions.len();
 
-        let mut encoder = self
-            .device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("Tree Build Encoder"),
+        // Upload particle data for tree building
+        let position_data: Vec<[f32; 3]> = positions
+            .iter()
+            .map(|pos| [pos.x as f32, pos.y as f32, pos.z as f32])
+            .collect();
+
+        let mass_data: Vec<f32> = masses.iter().map(|mass| *mass as f32).collect();
+
+        let position_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Tree Build Positions"),
+            contents: bytemuck::cast_slice(&position_data),
+            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+        });
+
+        let mass_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Tree Build Masses"),
+            contents: bytemuck::cast_slice(&mass_data),
+            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+        });
+
+        // Create node counter buffer
+        let node_counter_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Node Counter"),
+            contents: bytemuck::cast_slice(&[1u32]), // Start with 1 (root node)
+            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+        });
+
+        // Create tree build parameters
+        let tree_params = TreeBuildParams {
+            num_particles: particle_count as u32,
+            max_depth: self.max_depth,
+            min_particles_per_node: self.min_particles_per_node,
+            root_min_x: self.root_bounds.min.x as f32,
+            root_min_y: self.root_bounds.min.y as f32,
+            root_min_z: self.root_bounds.min.z as f32,
+            root_max_x: self.root_bounds.max.x as f32,
+            root_max_y: self.root_bounds.max.y as f32,
+            root_max_z: self.root_bounds.max.z as f32,
+        };
+
+        let params_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Tree Build Parameters"),
+            contents: bytemuck::cast_slice(&[tree_params]),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        });
+
+        // Create bind group for tree building
+        let bind_group = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("Tree Build Bind Group"),
+            layout: &self.tree_build_pipeline.as_ref().unwrap().get_bind_group_layout(0),
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: self.morton_codes_buffer.as_ref().unwrap().as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: self.sorted_indices_buffer.as_ref().unwrap().as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: position_buffer.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: mass_buffer.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 4,
+                    resource: self.tree_nodes_buffer.as_ref().unwrap().as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 5,
+                    resource: node_counter_buffer.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 6,
+                    resource: params_buffer.as_entire_binding(),
+                },
+            ],
+        });
+
+        // Phase 1: Build tree structure
+        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: Some("Tree Build Encoder"),
+        });
+
+        {
+            let mut compute_pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
+                label: Some("Tree Build Structure Pass"),
+                timestamp_writes: None,
             });
 
-        // Tree building would happen here
-        // This is a complex algorithm that builds the tree bottom-up
+            compute_pass.set_pipeline(self.tree_build_pipeline.as_ref().unwrap());
+            compute_pass.set_bind_group(0, &bind_group, &[]);
+
+            let workgroup_size = 64;
+            let num_workgroups = (particle_count + workgroup_size - 1) / workgroup_size;
+            compute_pass.dispatch_workgroups(num_workgroups as u32, 1, 1);
+        }
 
         self.queue.submit(std::iter::once(encoder.finish()));
+
+        // Phase 2: Compute centers of mass
+        // This would require reading back the node count and dispatching another compute pass
+        // For now, we'll use a fixed estimate of maximum nodes
+        let max_nodes = particle_count * 2; // Conservative estimate
+
+        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: Some("Center of Mass Encoder"),
+        });
+
+        {
+            let mut compute_pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
+                label: Some("Center of Mass Pass"),
+                timestamp_writes: None,
+            });
+
+            compute_pass.set_pipeline(self.tree_build_pipeline.as_ref().unwrap());
+            compute_pass.set_bind_group(0, &bind_group, &[]);
+
+            let workgroup_size = 64;
+            let num_workgroups = (max_nodes + workgroup_size - 1) / workgroup_size;
+            compute_pass.dispatch_workgroups(num_workgroups as u32, 1, 1);
+        }
+
+        self.queue.submit(std::iter::once(encoder.finish()));
+
+        // Update node count estimate
+        self.node_count = max_nodes as u32;
 
         Ok(())
     }

@@ -19,6 +19,48 @@ pub struct TreeTraversal {
     staging_buffer: Option<Buffer>,
 }
 
+/// GPU tree node representation (compatible with WGSL shader)
+#[repr(C)]
+#[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
+struct GpuTreeNode {
+    // Bounding box
+    min_x: f32,
+    min_y: f32,
+    min_z: f32,
+    max_x: f32,
+    max_y: f32,
+    max_z: f32,
+
+    // Center of mass and total mass
+    center_of_mass: [f32; 3],
+    total_mass: f32,
+
+    // Tree structure
+    child_mask: u32,        // Bitmask for which children exist
+    first_child_index: u32, // Index of first child (if internal)
+    particle_start: u32,    // Start index in particle array (if leaf)
+    particle_count: u32,    // Number of particles (if leaf)
+}
+
+impl Default for GpuTreeNode {
+    fn default() -> Self {
+        Self {
+            min_x: 0.0,
+            min_y: 0.0,
+            min_z: 0.0,
+            max_x: 0.0,
+            max_y: 0.0,
+            max_z: 0.0,
+            center_of_mass: [0.0, 0.0, 0.0],
+            total_mass: 0.0,
+            child_mask: 0,
+            first_child_index: 0xFFFFFFFF,
+            particle_start: 0,
+            particle_count: 0,
+        }
+    }
+}
+
 impl TreeTraversal {
     /// Create a new tree traversal handler
     pub fn new() -> Self {
@@ -30,7 +72,7 @@ impl TreeTraversal {
     }
 
     /// Calculate forces using GPU tree traversal
-    pub fn calculate_forces_gpu(
+    pub async fn calculate_forces_gpu(
         &mut self,
         device: &Device,
         queue: &Queue,
@@ -93,6 +135,14 @@ impl TreeTraversal {
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
 
+        // Create dummy tree buffer for now (would come from octree)
+        let dummy_tree_data = vec![GpuTreeNode::default(); particle_count.max(1)];
+        let tree_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Tree Nodes"),
+            contents: bytemuck::cast_slice(&dummy_tree_data),
+            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+        });
+
         // Create bind group
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("Tree Traversal Bind Group"),
@@ -114,7 +164,10 @@ impl TreeTraversal {
                     binding: 3,
                     resource: params_buffer.as_entire_binding(),
                 },
-                // Tree buffer would be binding 4, but we'll add it when available
+                wgpu::BindGroupEntry {
+                    binding: 4,
+                    resource: tree_buffer.as_entire_binding(),
+                },
             ],
         });
 
@@ -148,12 +201,9 @@ impl TreeTraversal {
 
         queue.submit(std::iter::once(encoder.finish()));
 
-        // Read results back
-        // TODO: Implement proper GPU result reading
-        // For now, just zero out the forces as a placeholder
-        for force in forces.iter_mut() {
-            *force = Vector3::zeros();
-        }
+        // Read results back from GPU
+        self.read_forces_from_gpu(device, queue, &staging_buffer, forces, particle_count)
+            .await?;
 
         Ok(())
     }
@@ -169,38 +219,50 @@ impl TreeTraversal {
     ) -> Result<(), GravwellError> {
         // Map the staging buffer for reading
         let buffer_slice = staging_buffer.slice(..);
-        let (sender, receiver) = futures_intrusive::channel::shared::oneshot_channel();
 
+        // Create a simple channel for completion notification
+        let (sender, receiver) = std::sync::mpsc::channel();
+
+        // Request mapping
         buffer_slice.map_async(wgpu::MapMode::Read, move |result| {
-            sender.send(result).unwrap();
+            let _ = sender.send(result);
         });
 
+        // Poll device until mapping is complete
         device.poll(wgpu::Maintain::Wait);
 
-        if let Some(Ok(())) = receiver.receive().await {
-            let data = buffer_slice.get_mapped_range();
-            let force_data: &[[f32; 3]] = bytemuck::cast_slice(&data);
+        // Wait for mapping completion
+        match receiver.recv() {
+            Ok(Ok(())) => {
+                let data = buffer_slice.get_mapped_range();
+                let force_data: &[[f32; 3]] = bytemuck::cast_slice(&data);
 
-            // Copy results back to output array
-            for (i, force_gpu) in force_data.iter().enumerate() {
-                if i < particle_count {
-                    forces[i] = Vector3::new(
-                        force_gpu[0] as Scalar,
-                        force_gpu[1] as Scalar,
-                        force_gpu[2] as Scalar,
-                    );
+                // Copy results back to output array
+                for (i, force_gpu) in force_data.iter().enumerate() {
+                    if i < particle_count && i < forces.len() {
+                        forces[i] = Vector3::new(
+                            force_gpu[0] as Scalar,
+                            force_gpu[1] as Scalar,
+                            force_gpu[2] as Scalar,
+                        );
+                    }
                 }
+
+                drop(data);
+                staging_buffer.unmap();
+                Ok(())
             }
+            _ => {
+                // Fallback: zero out forces if reading fails
+                for force in forces.iter_mut() {
+                    *force = Vector3::zeros();
+                }
 
-            drop(data);
-            staging_buffer.unmap();
-        } else {
-            return Err(GravwellError::GpuError(
-                "Failed to map staging buffer".into(),
-            ));
+                Err(GravwellError::GpuError(
+                    "Failed to map staging buffer for reading".into(),
+                ))
+            }
         }
-
-        Ok(())
     }
 }
 
@@ -223,7 +285,7 @@ impl Default for TreeTraversal {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Mass;
+    use crate::Mass;
 
     #[test]
     fn test_traversal_creation() {
@@ -231,7 +293,7 @@ mod tests {
         assert_eq!(traversal.max_stack_depth, 64);
     }
 
-    #[tokio::test]
+    #[test]
     async fn test_traversal_params() {
         let params = TraversalParams {
             theta: 0.5,

@@ -35,5 +35,8 @@ pub use crate::{
     integrators::parallel::ParallelVelocityVerlet,
 };
 
+#[cfg(all(feature = "simd", feature = "parallel"))]
+pub use crate::forces::parallel_vectorized::ParallelVectorizedGravity;
+
 #[cfg(feature = "std")]
 pub use crate::collision::{aabb::AabbTree, spatial_hash::SpatialHash};

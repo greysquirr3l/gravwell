@@ -7,12 +7,12 @@ const RADIX_SIZE: u32 = 256u;         // 2^8 buckets
 const WORKGROUP_SIZE: u32 = 256u;     // Match RADIX_SIZE for efficiency
 
 // Shared memory for local reduction
-var<workgroup> local_histogram: array<u32, RADIX_SIZE>;
-var<workgroup> local_prefix_sum: array<u32, RADIX_SIZE>;
+var<workgroup> local_histogram: array<atomic<u32>, RADIX_SIZE>;
+var<workgroup> local_prefix_sum: array<atomic<u32>, RADIX_SIZE>;
 
-@group(0) @binding(0) var<storage, read> input_keys: array<u64>;
+@group(0) @binding(0) var<storage, read> input_keys: array<u32>;
 @group(0) @binding(1) var<storage, read> input_values: array<u32>;
-@group(0) @binding(2) var<storage, read_write> output_keys: array<u64>;
+@group(0) @binding(2) var<storage, read_write> output_keys: array<u32>;
 @group(0) @binding(3) var<storage, read_write> output_values: array<u32>;
 @group(0) @binding(4) var<storage, read_write> global_histogram: array<u32>;
 @group(0) @binding(5) var<uniform> pass_info: RadixPassInfo;
@@ -33,7 +33,7 @@ fn compute_histogram(@builtin(global_invocation_id) global_id: vec3<u32>,
     
     // Initialize local histogram
     if (thread_id < RADIX_SIZE) {
-        local_histogram[thread_id] = 0u;
+        atomicStore(&local_histogram[thread_id], 0u);
     }
     workgroupBarrier();
     
@@ -53,7 +53,7 @@ fn compute_histogram(@builtin(global_invocation_id) global_id: vec3<u32>,
     // Write local histogram to global memory
     if (thread_id < RADIX_SIZE) {
         let global_offset = workgroup_id.x * RADIX_SIZE + thread_id;
-        global_histogram[global_offset] = local_histogram[thread_id];
+        global_histogram[global_offset] = atomicLoad(&local_histogram[thread_id]);
     }
 }
 
@@ -148,8 +148,8 @@ fn single_pass_sort(@builtin(global_invocation_id) global_id: vec3<u32>,
 }
 
 // Extract digit from key for current radix pass
-fn extract_digit(key: u64, bit_shift: u32) -> u32 {
-    return u32((key >> bit_shift) & u64(RADIX_SIZE - 1u));
+fn extract_digit(key: u32, bit_shift: u32) -> u32 {
+    return (key >> bit_shift) & (RADIX_SIZE - 1u);
 }
 
 // Parallel prefix sum using up-sweep/down-sweep
@@ -206,14 +206,14 @@ fn bitonic_sort(@builtin(global_invocation_id) global_id: vec3<u32>,
     }
     
     // Load data into shared memory
-    var local_keys: array<u64, 256>;
+    var local_keys: array<u32, 256>;
     var local_values: array<u32, 256>;
     
     if (thread_id < pass_info.num_elements) {
         local_keys[thread_id] = input_keys[thread_id];
         local_values[thread_id] = input_values[thread_id];
     } else {
-        local_keys[thread_id] = 0xFFFFFFFFFFFFFFFFu64; // Max value for padding
+        local_keys[thread_id] = 0xFFFFFFFFu; // Max value for padding
         local_values[thread_id] = 0u;
     }
     workgroupBarrier();

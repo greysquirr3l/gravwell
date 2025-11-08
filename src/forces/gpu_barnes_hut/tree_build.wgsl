@@ -30,7 +30,7 @@ struct OctreeNode {
     _padding: array<u32, 3>,
 }
 
-@group(0) @binding(0) var<storage, read> sorted_morton_codes: array<u64>;
+@group(0) @binding(0) var<storage, read> sorted_morton_codes: array<u32>;
 @group(0) @binding(1) var<storage, read> sorted_particle_indices: array<u32>;
 @group(0) @binding(2) var<storage, read> particle_positions: array<vec3<f32>>;
 @group(0) @binding(3) var<storage, read> particle_masses: array<f32>;
@@ -115,7 +115,7 @@ fn init_root_node(node_idx: u32) {
 }
 
 // Recursively insert particle into tree
-fn insert_particle_recursive(node_idx: u32, particle_idx: u32, morton_code: u64, depth: u32) {
+fn insert_particle_recursive(node_idx: u32, particle_idx: u32, morton_code: u32, depth: u32) {
     if (depth >= tree_params.max_depth) {
         // Force leaf node at maximum depth
         octree_nodes[node_idx].node_type = 1u;
