@@ -7,10 +7,10 @@
 //! the multiplicative performance gains possible when both optimizations
 //! are used together.
 
-use gravwell::{
-    forces::{DirectGravity, ParallelDirectGravity},
-    prelude::*,
-};
+use gravwell::{forces::DirectGravity, prelude::*};
+
+#[cfg(feature = "parallel")]
+use gravwell::forces::ParallelDirectGravity;
 use std::time::Instant;
 
 #[cfg(feature = "simd")]
@@ -83,7 +83,7 @@ fn run_performance_comparison(particle_count: usize) -> Result<()> {
     };
 
     #[cfg(not(feature = "parallel"))]
-    let parallel_time = serial_time; // Use serial time as fallback
+    let _parallel_time = serial_time; // Use serial time as fallback
 
     // 3. SIMD Only
     #[cfg(feature = "simd")]
@@ -93,7 +93,7 @@ fn run_performance_comparison(particle_count: usize) -> Result<()> {
     };
 
     #[cfg(not(feature = "simd"))]
-    let simd_time = serial_time; // Use serial time as fallback
+    let _simd_time = serial_time; // Use serial time as fallback
 
     // 4. Parallel + SIMD Combined (current parallel implementation)
     #[cfg(all(feature = "parallel", feature = "simd"))]
@@ -105,7 +105,7 @@ fn run_performance_comparison(particle_count: usize) -> Result<()> {
     };
 
     #[cfg(not(all(feature = "parallel", feature = "simd")))]
-    let combined_time = serial_time; // Use serial time as fallback
+    let _combined_time = serial_time; // Use serial time as fallback
 
     // Display results
     println!("  📊 Performance Results:");
@@ -117,39 +117,39 @@ fn run_performance_comparison(particle_count: usize) -> Result<()> {
 
     #[cfg(feature = "parallel")]
     {
-        let parallel_speedup = serial_time / parallel_time;
+        let parallel_speedup = serial_time / _parallel_time;
         println!(
-            "     Parallel:              {:.2}ms ({:.1}μs per step) - {:.2}x speedup",
-            parallel_time * 1000.0,
-            parallel_time * 1_000_000.0 / steps as f64,
+            "  Parallel Performance: {:.2}ms ({:.1}μs per step) - {:.2}x speedup",
+            _parallel_time * 1000.0,
+            _parallel_time * 1_000_000.0 / steps as f64,
             parallel_speedup
         );
     }
 
     #[cfg(feature = "simd")]
     {
-        let simd_speedup = serial_time / simd_time;
+        let simd_speedup = serial_time / _simd_time;
         println!(
-            "     SIMD:                  {:.2}ms ({:.1}μs per step) - {:.2}x speedup",
-            simd_time * 1000.0,
-            simd_time * 1_000_000.0 / steps as f64,
+            "     SIMD Performance: {:.2}ms ({:.1}μs per step) - {:.2}x speedup",
+            _simd_time * 1000.0,
+            _simd_time * 1_000_000.0 / steps as f64,
             simd_speedup
         );
     }
 
     #[cfg(all(feature = "parallel", feature = "simd"))]
     {
-        let combined_speedup = serial_time / combined_time;
+        let combined_speedup = serial_time / _combined_time;
         println!(
-            "     Parallel (current):    {:.2}ms ({:.1}μs per step) - {:.2}x speedup",
-            combined_time * 1000.0,
-            combined_time * 1_000_000.0 / steps as f64,
+            "     Combined Performance: {:.2}ms ({:.1}μs per step) - {:.2}x speedup",
+            _combined_time * 1000.0,
+            _combined_time * 1_000_000.0 / steps as f64,
             combined_speedup
         );
 
         // Calculate theoretical combined speedup
-        let parallel_speedup = serial_time / parallel_time;
-        let simd_speedup = serial_time / simd_time;
+        let parallel_speedup = serial_time / _parallel_time;
+        let simd_speedup = serial_time / _simd_time;
         let theoretical_combined = parallel_speedup * simd_speedup;
         let theoretical_time = serial_time / theoretical_combined;
 

@@ -1,6 +1,9 @@
 // Note: GPU features require 'gpu' feature to be enabled
 // use gravwell::forces::GpuDirectGravity; // Not available without 'gpu' feature
+
+#[cfg(feature = "gpu")]
 use gravwell::prelude::*;
+#[cfg(feature = "gpu")]
 use std::time::Instant;
 
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {

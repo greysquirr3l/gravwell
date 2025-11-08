@@ -67,7 +67,7 @@ impl Integrator for SemiImplicitEuler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{core::particle::Body, forces::DirectGravity, utils::constants};
+    use crate::{core::particle::Body, forces::DirectGravity};
 
     #[test]
     fn test_euler_basic_step() {

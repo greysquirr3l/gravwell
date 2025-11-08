@@ -980,7 +980,7 @@ mod tests {
         manager.update_positions_simple(&positions, &handles);
 
         // Update activation from origin
-        let active = manager.update_activation(Vector3::new(0.0, 0.0, 0.0));
+        let _active = manager.update_activation(Vector3::new(0.0, 0.0, 0.0));
 
         // Should activate particles within 50 units (first two particles)
         // Note: there may be transition delays, so we need to advance frames

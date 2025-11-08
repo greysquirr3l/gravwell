@@ -655,7 +655,7 @@ impl AdvancedFrustumCuller {
 mod tests {
     use super::*;
     use crate::types::Vector3;
-    use std::f64::consts::PI;
+    // use std::f64::consts::PI; // Unused in current implementation
 
     #[test]
     fn test_plane_creation() {

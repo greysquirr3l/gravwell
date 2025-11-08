@@ -1074,6 +1074,38 @@ fn calculate_forces_aos(particles: &[ParticleAoS], forces: &mut [Vector3]) {
 
 ---
 
+## 8. Error Handling
+
+This tutorial covers error handling best practices in Gravwell simulations.
+
+[Coming soon - comprehensive error handling patterns and recovery strategies]
+
+## 9. Scientific Computing
+
+This tutorial focuses on using Gravwell for scientific computing applications.
+
+[Coming soon - validation methods, energy conservation, and numerical accuracy]
+
+## 10. Game Engine Integration
+
+This tutorial covers integrating Gravwell with game engines.
+
+[Coming soon - Unity, Unreal, and custom engine integration examples]
+
+## 11. Custom Components
+
+This tutorial explains how to create custom integrators and force calculators.
+
+[Coming soon - extending Gravwell with custom physics algorithms]
+
+## 12. GPU Acceleration
+
+This tutorial covers GPU acceleration techniques for large-scale simulations.
+
+[Coming soon - CUDA, OpenCL, and WebGPU acceleration strategies]
+
+---
+
 This tutorial series provides comprehensive guidance from basic physics simulations to
 advanced optimization techniques. Each section builds upon previous concepts while
 introducing new features and best practices for achieving optimal performance with Gravwell.

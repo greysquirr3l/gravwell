@@ -1,5 +1,10 @@
-use gravwell::forces::{DirectGravity, GpuDirectGravity};
+#[cfg(feature = "gpu")]
+use gravwell::forces::DirectGravity;
+#[cfg(feature = "gpu")]
+use gravwell::forces::GpuDirectGravity;
+#[cfg(feature = "gpu")]
 use gravwell::prelude::*;
+#[cfg(feature = "gpu")]
 use std::time::Instant;
 
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
