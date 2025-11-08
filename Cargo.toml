@@ -16,6 +16,7 @@ default = ["std"]
 std = ["nalgebra/std"]
 parallel = ["rayon"]
 simd = []
+gpu = ["wgpu", "pollster", "bytemuck", "futures-intrusive", "tokio"]
 serde = ["dep:serde", "nalgebra/serde-serialize"]
 
 [dependencies]
@@ -26,6 +27,11 @@ tracing = "0.1"
 # Optional dependencies
 rayon = { version = "1.7", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
+wgpu = { version = "0.19", optional = true, features = ["wgsl"] }
+pollster = { version = "0.3", optional = true }
+bytemuck = { version = "1.14", optional = true, features = ["derive"] }
+futures-intrusive = { version = "0.5", optional = true }
+tokio = { version = "1.0", optional = true, features = ["rt"] }
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }

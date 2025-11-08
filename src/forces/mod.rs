@@ -6,9 +6,15 @@ pub mod direct;
 #[cfg(feature = "parallel")]
 pub mod parallel;
 
+#[cfg(feature = "gpu")]
+pub mod gpu;
+
 // Re-export public types
 pub use barnes_hut::BarnesHut;
 pub use direct::DirectGravity;
 
 #[cfg(feature = "parallel")]
 pub use parallel::{ChunkSizeStrategy, ParallelDirectGravity};
+
+#[cfg(feature = "gpu")]
+pub use gpu::GpuDirectGravity;

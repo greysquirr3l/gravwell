@@ -48,6 +48,11 @@ pub enum GravwellError {
     /// Numerical overflow or underflow error.
     #[error("Numerical error: {0}")]
     Numerical(String),
+
+    /// GPU acceleration error.
+    #[cfg(feature = "gpu")]
+    #[error("GPU error: {0}")]
+    GpuError(String),
 }
 
 impl GravwellError {
@@ -80,5 +85,11 @@ impl GravwellError {
     /// Create a numerical error.
     pub fn numerical(msg: impl Into<String>) -> Self {
         Self::Numerical(msg.into())
+    }
+
+    /// Create a GPU error.
+    #[cfg(feature = "gpu")]
+    pub fn gpu_error(msg: impl Into<String>) -> Self {
+        Self::GpuError(msg.into())
     }
 }
