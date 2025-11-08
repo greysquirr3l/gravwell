@@ -1,32 +1,46 @@
 //! Adaptive timestep control example
 //!
-//! Demonstrates the advanced timestep control system with error estimation
-//! and automatic stability detection.
+//! Demonstrates basic timestep control concepts with error estimation
+//! and stability detection using the available Gravwell API.
 
-use gravwell::error::Error;
+// use gravwell::error::GravwellError; // Imported via prelude
 use gravwell::prelude::*;
 use std::time::Instant;
 
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    println!("🚀 Gravwell - Advanced Timestep Control Demo");
-    println!("==============================================");
-
-    // Create adaptive timestep controller
-    let mut timestep_controller = AdaptiveTimestepController::conservative(
-        0.001, // Initial timestep
-        1e-9,  // Error tolerance
-    )?;
-
-    println!("✅ Created adaptive timestep controller");
-    println!(
-        "   - Initial timestep: {:.3e} s",
-        timestep_controller.current_timestep()
-    );
-    println!("   - Error tolerance: 1e-9");
-    println!("   - Strategy: Conservative");
+    println!("🚀 Gravwell - Basic Timestep Control Demo");
+    println!("==========================================");
 
     // Set up a challenging N-body system
-    let mut simulation = setup_chaotic_system()?;
+    let mut simulation = SimulationBuilder::new()
+        .with_integrator(VelocityVerlet::new())
+        .with_force_calculator(DirectGravity::new())
+        .build()?;
+
+    // Create a figure-8 orbit system (known to be chaotic and challenging)
+    simulation.add_body(
+        Body::new()
+            .with_mass(1.0)
+            .with_position([-0.97000436, 0.24308753, 0.0])
+            .with_velocity([0.4662036850, 0.4323657300, 0.0])
+            .with_radius(0.1),
+    )?;
+
+    simulation.add_body(
+        Body::new()
+            .with_mass(1.0)
+            .with_position([0.97000436, -0.24308753, 0.0])
+            .with_velocity([0.4662036850, 0.4323657300, 0.0])
+            .with_radius(0.1),
+    )?;
+
+    simulation.add_body(
+        Body::new()
+            .with_mass(1.0)
+            .with_position([0.0, 0.0, 0.0])
+            .with_velocity([-0.93240737, -0.86473146, 0.0])
+            .with_radius(0.1),
+    )?;
     println!("✅ Created chaotic 3-body system");
 
     // Simulation parameters
@@ -35,79 +49,79 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let max_steps = 100000;
     let mut step_count = 0;
 
+    // Basic timestep control parameters
+    let mut current_timestep = 0.001; // Start with 1ms
+    let min_timestep = 1e-6;
+    let max_timestep = 0.01;
+    let energy_tolerance = 1e-9;
+
     // Performance tracking
-    let start_time = Instant::now();
+    let _start_time = Instant::now();
     let mut total_timestep_adjustments = 0;
     let mut rejected_steps = 0;
-    let mut min_timestep_used = timestep_controller.current_timestep();
-    let mut max_timestep_used = timestep_controller.current_timestep();
+    let mut min_timestep_used: f64 = current_timestep;
+    let mut max_timestep_used: f64 = current_timestep;
 
-    println!("\n🎮 Starting adaptive simulation...");
+    println!("\n🎮 Starting basic adaptive simulation...");
     println!("Target time: {} s", total_time);
+    println!("Initial timestep: {:.3e} s", current_timestep);
 
-    // Main simulation loop with adaptive timestep
+    let initial_energy = simulation.total_energy();
+    let _start_time_main = Instant::now();
+
+    // Main simulation loop with basic timestep control
     while current_time < total_time && step_count < max_steps {
-        let initial_energy = simulation.total_energy();
+        let energy_before = simulation.total_energy();
 
-        // Get system state for timestep controller
-        let positions = simulation.positions();
-        let velocities = simulation.velocities();
-        let forces = simulation.current_forces();
-        let masses = simulation.masses();
+        // Take a simulation step
+        simulation.step(current_timestep)?;
+        current_time += current_timestep;
+        step_count += 1;
 
-        // Update timestep based on stability analysis
-        let previous_timestep = timestep_controller.current_timestep();
-        let new_timestep = timestep_controller.update_timestep(
-            &positions,
-            &velocities,
-            &forces,
-            &masses,
-            Some(initial_energy),
-        );
+        let energy_after = simulation.total_energy();
+        let energy_error = (energy_after - energy_before).abs() / energy_before.abs();
 
-        // Track timestep statistics
-        min_timestep_used = min_timestep_used.min(new_timestep);
-        max_timestep_used = max_timestep_used.max(new_timestep);
-
-        if (new_timestep - previous_timestep).abs() > 1e-12 {
+        // Basic timestep adaptation based on energy conservation
+        if energy_error > energy_tolerance {
+            // Energy error too high - reduce timestep
+            current_timestep *= 0.8;
             total_timestep_adjustments += 1;
-        }
 
-        // Get stability analysis
-        if let Some(analysis) = timestep_controller.last_stability_analysis() {
-            if !analysis.is_stable {
+            if current_timestep < min_timestep {
+                current_timestep = min_timestep;
                 rejected_steps += 1;
+            }
+        } else if energy_error < energy_tolerance * 0.1 {
+            // Energy well conserved - can increase timestep
+            current_timestep *= 1.1;
+            total_timestep_adjustments += 1;
 
-                // Print warning for instability
-                if step_count % 1000 == 0 {
-                    println!(
-                        "⚠️  Instability detected at t={:.3}: error={:.3e}, recommended_dt={:.3e}",
-                        current_time, analysis.current_error, analysis.recommended_timestep
-                    );
-                }
+            if current_timestep > max_timestep {
+                current_timestep = max_timestep;
             }
         }
 
-        // Advance simulation
-        simulation.step_with_timestep(new_timestep)?;
-        current_time += new_timestep;
-        step_count += 1;
+        // Track timestep statistics
+        min_timestep_used = min_timestep_used.min(current_timestep);
+        max_timestep_used = max_timestep_used.max(current_timestep);
 
         // Progress reporting
-        if step_count % 5000 == 0 {
-            let progress = (current_time / total_time * 100.0).min(100.0);
+        if step_count % 1000 == 0 {
+            let current_energy = simulation.total_energy();
+            let energy_drift = (current_energy - initial_energy).abs() / initial_energy.abs();
+
             println!(
-                "📊 Progress: {:.1}% | Steps: {} | Time: {:.3}s | dt: {:.3e}s | Energy: {:.6e}",
-                progress,
-                step_count,
-                current_time,
-                new_timestep,
-                simulation.total_energy()
+                "Step {}: t={:.3}s, dt={:.2e}s, energy_drift={:.2e}",
+                step_count, current_time, current_timestep, energy_drift
             );
+
+            if energy_drift > 1e-6 {
+                println!("⚠️  Warning: Energy drift detected!");
+            }
         }
     }
 
-    let elapsed_time = start_time.elapsed();
+    let elapsed_time = _start_time_main.elapsed();
 
     // Final results
     println!("\n🎯 Simulation Complete!");
@@ -133,28 +147,17 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // Error analysis
     println!("\n🔬 Error Analysis:");
     let final_energy = simulation.total_energy();
-    let initial_energy = -1.0; // Approximate for this system
     let energy_error = (final_energy - initial_energy).abs() / initial_energy.abs();
     println!("Energy conservation error: {:.3e}", energy_error);
+    println!("Final energy: {:.6e} J", final_energy);
 
-    if let Some(analysis) = timestep_controller.last_stability_analysis() {
-        println!(
-            "Final stability status: {}",
-            if analysis.is_stable {
-                "✅ Stable"
-            } else {
-                "⚠️ Unstable"
-            }
-        );
-        println!("Final error estimate: {:.3e}", analysis.current_error);
-        println!("Error trend: {:?}", analysis.error_trend);
-
-        if !analysis.warnings.is_empty() {
-            println!("Active warnings:");
-            for warning in &analysis.warnings {
-                println!("  - {:?}", warning);
-            }
-        }
+    // Basic stability assessment
+    if energy_error < 1e-8 {
+        println!("Final stability status: ✅ Excellent energy conservation");
+    } else if energy_error < 1e-6 {
+        println!("Final stability status: ✅ Good energy conservation");
+    } else {
+        println!("Final stability status: ⚠️ Poor energy conservation");
     }
 
     // Performance comparison
@@ -170,134 +173,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         1.0 / efficiency
     );
 
-    println!("\n✨ Adaptive timestep control successfully maintained accuracy while optimizing performance!");
+    println!("\n✨ Basic timestep control successfully maintained accuracy while optimizing performance!");
 
     Ok(())
-}
-
-fn setup_chaotic_system() -> Result<SimulationBuilder, GravwellError> {
-    let mut builder = SimulationBuilder::new()
-        .with_integrator(VelocityVerlet::new())
-        .with_force_calculator(DirectGravity::new());
-
-    // Create a figure-8 orbit system (known to be chaotic and challenging)
-    // Body 1
-    builder = builder.add_body(
-        Body::new()
-            .with_mass(1.0)
-            .with_position([-0.97000436, 0.24308753, 0.0])
-            .with_velocity([0.4662036850, 0.4323657300, 0.0]),
-    );
-
-    // Body 2
-    builder = builder.add_body(
-        Body::new()
-            .with_mass(1.0)
-            .with_position([0.97000436, -0.24308753, 0.0])
-            .with_velocity([0.4662036850, 0.4323657300, 0.0]),
-    );
-
-    // Body 3
-    builder = builder.add_body(
-        Body::new()
-            .with_mass(1.0)
-            .with_position([0.0, 0.0, 0.0])
-            .with_velocity([-0.93240737, -0.86473146, 0.0]),
-    );
-
-    Ok(builder)
-}
-
-// Temporary simulation structure for demo
-struct SimulationBuilder {
-    // Simplified structure for demo
-}
-
-impl SimulationBuilder {
-    fn new() -> Self {
-        Self {}
-    }
-
-    fn with_integrator(self, _integrator: VelocityVerlet) -> Self {
-        self
-    }
-
-    fn with_force_calculator(self, _calculator: DirectGravity) -> Self {
-        self
-    }
-
-    fn add_body(self, _body: Body) -> Self {
-        self
-    }
-}
-
-struct Simulation;
-
-impl Simulation {
-    fn total_energy(&self) -> Scalar {
-        -1.5 // Approximate energy for figure-8 orbit
-    }
-
-    fn positions(&self) -> Vec<Position> {
-        vec![
-            Position::new(-0.97, 0.24, 0.0),
-            Position::new(0.97, -0.24, 0.0),
-            Position::new(0.0, 0.0, 0.0),
-        ]
-    }
-
-    fn velocities(&self) -> Vec<Velocity> {
-        vec![
-            Velocity::new(0.466, 0.432, 0.0),
-            Velocity::new(0.466, 0.432, 0.0),
-            Velocity::new(-0.932, -0.865, 0.0),
-        ]
-    }
-
-    fn current_forces(&self) -> Vec<Force> {
-        vec![
-            Force::new(0.1, 0.05, 0.0),
-            Force::new(-0.05, 0.1, 0.0),
-            Force::new(-0.05, -0.15, 0.0),
-        ]
-    }
-
-    fn masses(&self) -> Vec<Mass> {
-        vec![Mass::new(1.0), Mass::new(1.0), Mass::new(1.0)]
-    }
-
-    fn step_with_timestep(&mut self, _dt: Scalar) -> Result<(), GravwellError> {
-        // Simplified step for demo
-        Ok(())
-    }
-}
-
-struct VelocityVerlet;
-impl VelocityVerlet {
-    fn new() -> Self {
-        Self
-    }
-}
-
-struct DirectGravity;
-impl DirectGravity {
-    fn new() -> Self {
-        Self
-    }
-}
-
-struct Body;
-impl Body {
-    fn new() -> Self {
-        Self
-    }
-    fn with_mass(self, _mass: Scalar) -> Self {
-        self
-    }
-    fn with_position(self, _pos: [Scalar; 3]) -> Self {
-        self
-    }
-    fn with_velocity(self, _vel: [Scalar; 3]) -> Self {
-        self
-    }
 }

@@ -5,7 +5,7 @@
 
 // Using std::result::Result to avoid conflict with gravwell::Result
 // use gravwell::error::Result;  // Not needed since we use std::result::Result
-use gravwell::prelude::*;
+// use gravwell::prelude::*; // Disabled - unused
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
@@ -227,6 +227,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
 // Performance test structures
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct PerformanceResult {
     avg_step_time: Duration,
     min_step_time: Duration,
@@ -243,6 +244,7 @@ struct RealtimePerformance {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct MemoryUsage {
     total_bytes: usize,
     particles_bytes: usize,
@@ -480,7 +482,7 @@ fn test_platform_optimizations() -> std::result::Result<(), Box<dyn std::error::
     }
 
     // Test different optimization levels
-    let test_particles = 1000;
+    let _test_particles = 1000;
 
     println!("  Optimization Levels:");
     println!("    Debug build: Not recommended for benchmarking");
@@ -534,22 +536,22 @@ fn generate_performance_report(
 
     // Find best performing configurations
     let mut best_small_system: Option<(String, PerformanceResult)> = None;
-    let mut best_large_system = None;
+    let mut best_large_system: Option<(String, PerformanceResult)> = None;
 
     for (key, result) in results {
         if key.contains("1000") && result.avg_step_time.as_secs_f64() <= 0.01667 {
             if best_small_system.is_none()
-                || result.avg_step_time < best_small_system.unwrap().1.avg_step_time
+                || result.avg_step_time < best_small_system.as_ref().unwrap().1.avg_step_time
             {
-                best_small_system = Some((key, result));
+                best_small_system = Some((key.clone(), result.clone()));
             }
         }
 
         if key.contains("10000") && result.avg_step_time.as_secs_f64() <= 0.01667 {
             if best_large_system.is_none()
-                || result.avg_step_time < best_large_system.unwrap().1.avg_step_time
+                || result.avg_step_time < best_large_system.as_ref().unwrap().1.avg_step_time
             {
-                best_large_system = Some((key, result));
+                best_large_system = Some((key.clone(), result.clone()));
             }
         }
     }

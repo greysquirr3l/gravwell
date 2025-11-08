@@ -35,7 +35,7 @@ Add Gravwell to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-gravwell = "0.1.0"
+gravwell = "0.5.0"
 nalgebra = "0.32"
 ```
 
